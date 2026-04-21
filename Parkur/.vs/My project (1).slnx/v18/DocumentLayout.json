@@ -1,0 +1,185 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "E:\\Unity\\My project (1)\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|e:\\unity\\my project (1)\\assets\\samplescenes\\shaders\\skybox-procedural.shader||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\samplescenes\\shaders\\skybox-procedural.shader||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|e:\\unity\\my project (1)\\assets\\samplescenes\\scripts\\slowmobutton.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\samplescenes\\scripts\\slowmobutton.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|e:\\unity\\my project (1)\\assets\\samplescenes\\scripts\\placetargetwithmouse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\samplescenes\\scripts\\placetargetwithmouse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|e:\\unity\\my project (1)\\assets\\samplescenes\\scripts\\particlescenecontrols.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\samplescenes\\scripts\\particlescenecontrols.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|e:\\unity\\my project (1)\\assets\\samplescenes\\scripts\\levelreset.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\samplescenes\\scripts\\levelreset.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|e:\\unity\\my project (1)\\assets\\samplescenes\\scripts\\cameraswitch.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\samplescenes\\scripts\\cameraswitch.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|e:\\unity\\my project (1)\\assets\\samplescenes\\menu\\scripts\\sceneandurlloader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\samplescenes\\menu\\scripts\\sceneandurlloader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|e:\\unity\\my project (1)\\assets\\samplescenes\\menu\\scripts\\pausemenu.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\samplescenes\\menu\\scripts\\pausemenu.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|e:\\unity\\my project (1)\\assets\\samplescenes\\menu\\scripts\\menusceneloader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\samplescenes\\menu\\scripts\\menusceneloader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|e:\\unity\\my project (1)\\assets\\playermove.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B4CD19DA-EE08-5225-FB19-1D0DFA4113DD}|Assembly-CSharp.csproj|solutionrelative:assets\\playermove.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Skybox-Procedural.shader",
+              "DocumentMoniker": "E:\\Unity\\My project (1)\\Assets\\SampleScenes\\Shaders\\Skybox-Procedural.shader",
+              "RelativeDocumentMoniker": "Assets\\SampleScenes\\Shaders\\Skybox-Procedural.shader",
+              "ToolTip": "E:\\Unity\\My project (1)\\Assets\\SampleScenes\\Shaders\\Skybox-Procedural.shader",
+              "RelativeToolTip": "Assets\\SampleScenes\\Shaders\\Skybox-Procedural.shader",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002777|",
+              "WhenOpened": "2026-04-20T17:33:35.08Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "SlowMoButton.cs",
+              "DocumentMoniker": "E:\\Unity\\My project (1)\\Assets\\SampleScenes\\Scripts\\SlowMoButton.cs",
+              "RelativeDocumentMoniker": "Assets\\SampleScenes\\Scripts\\SlowMoButton.cs",
+              "ToolTip": "E:\\Unity\\My project (1)\\Assets\\SampleScenes\\Scripts\\SlowMoButton.cs",
+              "RelativeToolTip": "Assets\\SampleScenes\\Scripts\\SlowMoButton.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-20T17:33:34.939Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "PlaceTargetWithMouse.cs",
+              "DocumentMoniker": "E:\\Unity\\My project (1)\\Assets\\SampleScenes\\Scripts\\PlaceTargetWithMouse.cs",
+              "RelativeDocumentMoniker": "Assets\\SampleScenes\\Scripts\\PlaceTargetWithMouse.cs",
+              "ToolTip": "E:\\Unity\\My project (1)\\Assets\\SampleScenes\\Scripts\\PlaceTargetWithMouse.cs",
+              "RelativeToolTip": "Assets\\SampleScenes\\Scripts\\PlaceTargetWithMouse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-20T17:33:34.861Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "ParticleSceneControls.cs",
+              "DocumentMoniker": "E:\\Unity\\My project (1)\\Assets\\SampleScenes\\Scripts\\ParticleSceneControls.cs",
+              "RelativeDocumentMoniker": "Assets\\SampleScenes\\Scripts\\ParticleSceneControls.cs",
+              "ToolTip": "E:\\Unity\\My project (1)\\Assets\\SampleScenes\\Scripts\\ParticleSceneControls.cs",
+              "RelativeToolTip": "Assets\\SampleScenes\\Scripts\\ParticleSceneControls.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-20T17:33:34.779Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "LevelReset.cs",
+              "DocumentMoniker": "E:\\Unity\\My project (1)\\Assets\\SampleScenes\\Scripts\\LevelReset.cs",
+              "RelativeDocumentMoniker": "Assets\\SampleScenes\\Scripts\\LevelReset.cs",
+              "ToolTip": "E:\\Unity\\My project (1)\\Assets\\SampleScenes\\Scripts\\LevelReset.cs",
+              "RelativeToolTip": "Assets\\SampleScenes\\Scripts\\LevelReset.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-20T17:33:34.7Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "CameraSwitch.cs",
+              "DocumentMoniker": "E:\\Unity\\My project (1)\\Assets\\SampleScenes\\Scripts\\CameraSwitch.cs",
+              "RelativeDocumentMoniker": "Assets\\SampleScenes\\Scripts\\CameraSwitch.cs",
+              "ToolTip": "E:\\Unity\\My project (1)\\Assets\\SampleScenes\\Scripts\\CameraSwitch.cs",
+              "RelativeToolTip": "Assets\\SampleScenes\\Scripts\\CameraSwitch.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-20T17:33:34.617Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "SceneAndURLLoader.cs",
+              "DocumentMoniker": "E:\\Unity\\My project (1)\\Assets\\SampleScenes\\Menu\\Scripts\\SceneAndURLLoader.cs",
+              "RelativeDocumentMoniker": "Assets\\SampleScenes\\Menu\\Scripts\\SceneAndURLLoader.cs",
+              "ToolTip": "E:\\Unity\\My project (1)\\Assets\\SampleScenes\\Menu\\Scripts\\SceneAndURLLoader.cs",
+              "RelativeToolTip": "Assets\\SampleScenes\\Menu\\Scripts\\SceneAndURLLoader.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-20T17:33:34.531Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "PauseMenu.cs",
+              "DocumentMoniker": "E:\\Unity\\My project (1)\\Assets\\SampleScenes\\Menu\\Scripts\\PauseMenu.cs",
+              "RelativeDocumentMoniker": "Assets\\SampleScenes\\Menu\\Scripts\\PauseMenu.cs",
+              "ToolTip": "E:\\Unity\\My project (1)\\Assets\\SampleScenes\\Menu\\Scripts\\PauseMenu.cs",
+              "RelativeToolTip": "Assets\\SampleScenes\\Menu\\Scripts\\PauseMenu.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-20T17:33:34.418Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "MenuSceneLoader.cs",
+              "DocumentMoniker": "E:\\Unity\\My project (1)\\Assets\\SampleScenes\\Menu\\Scripts\\MenuSceneLoader.cs",
+              "RelativeDocumentMoniker": "Assets\\SampleScenes\\Menu\\Scripts\\MenuSceneLoader.cs",
+              "ToolTip": "E:\\Unity\\My project (1)\\Assets\\SampleScenes\\Menu\\Scripts\\MenuSceneLoader.cs",
+              "RelativeToolTip": "Assets\\SampleScenes\\Menu\\Scripts\\MenuSceneLoader.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-20T17:33:34.221Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "PlayerMove.cs",
+              "DocumentMoniker": "E:\\Unity\\My project (1)\\Assets\\PlayerMove.cs",
+              "RelativeDocumentMoniker": "Assets\\PlayerMove.cs",
+              "ToolTip": "E:\\Unity\\My project (1)\\Assets\\PlayerMove.cs",
+              "RelativeToolTip": "Assets\\PlayerMove.cs",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAswBgAAABjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-20T17:11:17.522Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
