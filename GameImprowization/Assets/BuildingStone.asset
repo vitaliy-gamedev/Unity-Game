@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa32f5d1ac49ee7448c46a4924150c8b, type: 3}
+  m_Name: BuildingStone
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingData
+  id: 
+  displayName: "\u041A\u0430\u043C\u0456\u043D\u043D\u044F"
+  icon: {fileID: -642127405, guid: 0299570027e29504fb2aad705a2a18f8, type: 3}
+  worldSprite: {fileID: 0}
+  worldPrefab: {fileID: 4780761672997363260, guid: c8c1d41288dc7cb408bca20ec23d49ab, type: 3}
+  category: Stone
+  costType: 2
+  costAmount: 30
+  refundFraction: 0.5
