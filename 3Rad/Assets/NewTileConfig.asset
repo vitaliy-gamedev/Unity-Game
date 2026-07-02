@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c472e8895c7d674dbf354b5a5b0714f, type: 3}
+  m_Name: NewTileConfig
+  m_EditorClassIdentifier: Assembly-CSharp::TileTypeConfig
+  tiles:
+  - type: 0
+    sprite: {fileID: 7482667652216324306, guid: 5c930203ed50a4240b39761a1bbc38b0, type: 3}
+    color: {r: 0.9716981, g: 0, b: 0, a: 1}
+    scoreValue: 10
+  - type: 1
+    sprite: {fileID: 7482667652216324306, guid: 1c5cc0560c634c248a2013e3ef5f3284, type: 3}
+    color: {r: 0.023139905, g: 0.8451646, b: 0.9811321, a: 1}
+    scoreValue: 10
+  - type: 2
+    sprite: {fileID: 3625043607559282579, guid: a4afca1b38b5c70489018951fb10ac95, type: 3}
+    color: {r: 0.5377358, g: 0.2687851, b: 0.022828398, a: 1}
+    scoreValue: 10
+  - type: 3
+    sprite: {fileID: -2135585597343286014, guid: 5d41d65f64594ef499f1fc042b30d011, type: 3}
+    color: {r: 0.98564017, g: 1, b: 0, a: 1}
+    scoreValue: 10
+  - type: 4
+    sprite: {fileID: -2413806693520163455, guid: 34683257af16df04d8afdbc188c8234a, type: 3}
+    color: {r: 0.9622642, g: 0.35857958, b: 0.74395174, a: 1}
+    scoreValue: 10
+  - type: 5
+    sprite: {fileID: -712631045867808456, guid: 1a28de0231d278143a19f1a4ddb019ef, type: 3}
+    color: {r: 1, g: 0.54428774, b: 0.033018887, a: 1}
+    scoreValue: 10
