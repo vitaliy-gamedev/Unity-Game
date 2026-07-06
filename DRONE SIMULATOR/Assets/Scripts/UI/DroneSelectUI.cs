@@ -17,7 +17,7 @@ public class DroneSelectUI : MonoBehaviour
     [Header("Card Highlights")]
     public Image scoutCardBorder;
     public Image bomberCardBorder;
-    public Color selectedColor   = new Color(0.2f, 0.8f, 0.4f);
+    public Color selectedColor = new Color(0.2f, 0.8f, 0.4f);
     public Color unselectedColor = new Color(0.25f, 0.25f, 0.25f);
 
     [Header("Info")]
@@ -28,10 +28,10 @@ public class DroneSelectUI : MonoBehaviour
 
     void Start()
     {
-        scoutButton .onClick.AddListener(() => SelectDrone(GameManager.DroneType.Scout));
+        scoutButton.onClick.AddListener(() => SelectDrone(GameManager.DroneType.Scout));
         bomberButton.onClick.AddListener(() => SelectDrone(GameManager.DroneType.Bomber));
-        flyButton   .onClick.AddListener(OnFly);
-        backButton  .onClick.AddListener(OnBack);
+        flyButton.onClick.AddListener(OnFly);
+        backButton.onClick.AddListener(OnBack);
 
         // Default selection
         SelectDrone(GameManager.Instance != null
@@ -45,7 +45,7 @@ public class DroneSelectUI : MonoBehaviour
 
         bool isScout = type == GameManager.DroneType.Scout;
 
-        if (scoutCardBorder  != null) scoutCardBorder .color = isScout  ? selectedColor : unselectedColor;
+        if (scoutCardBorder != null) scoutCardBorder.color = isScout ? selectedColor : unselectedColor;
         if (bomberCardBorder != null) bomberCardBorder.color = !isScout ? selectedColor : unselectedColor;
 
         // Show localized info
@@ -69,7 +69,7 @@ public class DroneSelectUI : MonoBehaviour
         }
     }
 
-    void OnFly()
+    public void OnFly()
     {
         if (GameManager.Instance == null) return;
         if (_selected == GameManager.DroneType.Scout)
@@ -78,5 +78,5 @@ public class DroneSelectUI : MonoBehaviour
             GameManager.Instance.StartBomberMission();
     }
 
-    void OnBack() => GameManager.Instance?.LoadMainMenu();
+    public void OnBack() => GameManager.Instance?.LoadMainMenu();
 }
