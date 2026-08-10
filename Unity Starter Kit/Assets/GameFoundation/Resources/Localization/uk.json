@@ -1,0 +1,15 @@
+{
+  "entries": [
+    { "key": "main_menu_play", "value": "Грати" },
+    { "key": "main_menu_settings", "value": "Налаштування" },
+    { "key": "main_menu_credits", "value": "Автори" },
+    { "key": "main_menu_quit", "value": "Вийти" },
+    { "key": "popup_quit_title", "value": "Вийти з гри?" },
+    { "key": "popup_quit_message", "value": "Весь незбережений прогрес буде втрачено." },
+    { "key": "settings_master_volume", "value": "Загальна гучність" },
+    { "key": "settings_music_volume", "value": "Музика" },
+    { "key": "settings_sfx_volume", "value": "Звукові ефекти" },
+    { "key": "settings_language", "value": "Мова" },
+    { "key": "settings_back", "value": "Назад" }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "entries": [
+    { "key": "main_menu_play", "value": "Play" },
+    { "key": "main_menu_settings", "value": "Settings" },
+    { "key": "main_menu_credits", "value": "Credits" },
+    { "key": "main_menu_quit", "value": "Quit" },
+    { "key": "popup_quit_title", "value": "Quit the game?" },
+    { "key": "popup_quit_message", "value": "Any unsaved progress will be lost." },
+    { "key": "settings_master_volume", "value": "Master Volume" },
+    { "key": "settings_music_volume", "value": "Music" },
+    { "key": "settings_sfx_volume", "value": "SFX" },
+    { "key": "settings_language", "value": "Language" },
+    { "key": "settings_back", "value": "Back" }
+  ]
+}
