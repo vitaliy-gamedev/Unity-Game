@@ -21,6 +21,7 @@ namespace GameFoundation.UI
         private UIService _uiService;
         private IAudioService _audio;
         private ISettingsService _settings;
+        private ILocalizationService _localization;
         private bool _suppressCallbacks;
 
         protected override void Awake()
@@ -40,6 +41,10 @@ namespace GameFoundation.UI
 
             _audio = ServiceLocator.Get<IAudioService>();
             _settings = ServiceLocator.Get<ISettingsService>();
+            _localization = ServiceLocator.Get<ILocalizationService>();
+
+            if (_localization != null)
+                _localization.OnLanguageChanged += RefreshLanguageDropdownLabels;
 
             if (!ok) return; // window still registers, just skips wiring missing controls
 
@@ -54,6 +59,12 @@ namespace GameFoundation.UI
             sfxSlider.onValueChanged.AddListener(v => { if (!_suppressCallbacks) _audio?.SetSfxVolume(v); });
 
             SetupLanguageDropdown();
+        }
+
+        private void OnDestroy()
+        {
+            if (_localization != null)
+                _localization.OnLanguageChanged -= RefreshLanguageDropdownLabels;
         }
 
         protected override void OnOpened()
@@ -71,6 +82,7 @@ namespace GameFoundation.UI
             musicSlider.value = _audio.MusicVolume;
             sfxSlider.value = _audio.SfxVolume;
             _suppressCallbacks = false;
+            RefreshStaticLabels();
         }
 
         private void SetupLanguageDropdown()
@@ -79,7 +91,7 @@ namespace GameFoundation.UI
 
             languageDropdown.ClearOptions();
             var codes = _settings.AvailableLanguageCodes;
-            languageDropdown.AddOptions(new System.Collections.Generic.List<string>(codes));
+            languageDropdown.AddOptions(BuildLanguageOptions(codes));
 
             int current = System.Array.IndexOf(codes, _settings.CurrentLanguageCode);
             if (current >= 0) languageDropdown.SetValueWithoutNotify(current);
@@ -89,6 +101,46 @@ namespace GameFoundation.UI
                 if (index >= 0 && index < codes.Length)
                     _settings.SetLanguage(codes[index]);
             });
+        }
+
+        private System.Collections.Generic.List<string> BuildLanguageOptions(string[] codes)
+        {
+            var options = new System.Collections.Generic.List<string>(codes.Length);
+            foreach (var code in codes)
+                options.Add(_localization != null ? _localization.Get($"language_{code}") : code);
+
+            return options;
+        }
+
+        private void RefreshLanguageDropdownLabels()
+        {
+            if (_settings == null || languageDropdown == null) return;
+
+            _suppressCallbacks = true;
+            languageDropdown.ClearOptions();
+            languageDropdown.AddOptions(BuildLanguageOptions(_settings.AvailableLanguageCodes));
+
+            int current = System.Array.IndexOf(_settings.AvailableLanguageCodes, _settings.CurrentLanguageCode);
+            if (current >= 0)
+                languageDropdown.SetValueWithoutNotify(current);
+
+            languageDropdown.RefreshShownValue();
+            _suppressCallbacks = false;
+            RefreshStaticLabels();
+        }
+
+        private void RefreshStaticLabels()
+        {
+            SetButtonLabel(backButton, "common_back");
+        }
+
+        private void SetButtonLabel(Button button, string key)
+        {
+            if (button == null || _localization == null) return;
+
+            var label = button.GetComponentInChildren<TMP_Text>(true);
+            if (label != null)
+                label.text = _localization.Get(key);
         }
     }
 }

@@ -4,12 +4,22 @@
     { "key": "main_menu_settings", "value": "Paramètres" },
     { "key": "main_menu_credits", "value": "Crédits" },
     { "key": "main_menu_quit", "value": "Quitter" },
+    { "key": "common_back", "value": "Retour" },
+    { "key": "popup_yes", "value": "Oui" },
+    { "key": "popup_no", "value": "Non" },
     { "key": "popup_quit_title", "value": "Quitter le jeu ?" },
     { "key": "popup_quit_message", "value": "Toute progression non sauvegardée sera perdue." },
+    { "key": "settings_title", "value": "Paramètres" },
     { "key": "settings_master_volume", "value": "Volume général" },
     { "key": "settings_music_volume", "value": "Musique" },
     { "key": "settings_sfx_volume", "value": "Effets sonores" },
     { "key": "settings_language", "value": "Langue" },
-    { "key": "settings_back", "value": "Retour" }
+    { "key": "settings_back", "value": "Retour" },
+    { "key": "theme_light", "value": "Mode clair" },
+    { "key": "theme_dark", "value": "Mode sombre" },
+    { "key": "language_uk", "value": "Ukrainien" },
+    { "key": "language_en", "value": "Anglais" },
+    { "key": "language_fr", "value": "Français" },
+    { "key": "credits_author", "value": "Auteur" }
   ]
 }

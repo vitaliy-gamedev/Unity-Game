@@ -28,6 +28,9 @@ namespace GameFoundation.UI
 
         private void Apply()
         {
+            if (Screen.width <= 0 || Screen.height <= 0)
+                return;
+
             _lastSafeArea = Screen.safeArea;
             _lastOrientation = Screen.orientation;
 
@@ -41,6 +44,8 @@ namespace GameFoundation.UI
 
             _rect.anchorMin = anchorMin;
             _rect.anchorMax = anchorMax;
+            _rect.offsetMin = Vector2.zero;
+            _rect.offsetMax = Vector2.zero;
         }
     }
 }

@@ -15,14 +15,21 @@ namespace GameFoundation.UI
         [SerializeField] private TMP_Text label;
         [SerializeField] private string lightLabelText = "Light Mode";
         [SerializeField] private string darkLabelText = "Dark Mode";
+        [SerializeField] private string lightLabelKey = "theme_light";
+        [SerializeField] private string darkLabelKey = "theme_dark";
 
         private Toggle _toggle;
         private LightDarkThemeService _themeService;
+        private ILocalizationService _localization;
 
         private void Awake()
         {
             _toggle = GetComponent<Toggle>();
             _themeService = ServiceLocator.Get<LightDarkThemeService>();
+            _localization = ServiceLocator.Get<ILocalizationService>();
+            if (_localization != null)
+                _localization.OnLanguageChanged += UpdateLabel;
+
             if (_themeService == null) return;
 
             _toggle.SetIsOnWithoutNotify(_themeService.CurrentMode == ThemeMode.Dark);
@@ -35,10 +42,20 @@ namespace GameFoundation.UI
             });
         }
 
+        private void OnDestroy()
+        {
+            if (_localization != null)
+                _localization.OnLanguageChanged -= UpdateLabel;
+        }
+
         private void UpdateLabel()
         {
-            if (label == null) return;
-            label.text = _themeService.CurrentMode == ThemeMode.Dark ? darkLabelText : lightLabelText;
+            if (label == null || _themeService == null) return;
+
+            bool isDark = _themeService.CurrentMode == ThemeMode.Dark;
+            string key = isDark ? darkLabelKey : lightLabelKey;
+            string fallback = isDark ? darkLabelText : lightLabelText;
+            label.text = _localization != null ? _localization.Get(key) : fallback;
         }
     }
 }

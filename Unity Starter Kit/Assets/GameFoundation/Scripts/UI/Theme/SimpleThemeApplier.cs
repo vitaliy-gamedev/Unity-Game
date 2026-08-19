@@ -19,23 +19,38 @@ namespace GameFoundation.UI
         private Graphic _graphic;
         private TMP_Text _text;
         private LightDarkThemeService _themeService;
+        private bool _isSubscribed;
 
         private void Awake()
         {
             _graphic = GetComponent<Graphic>();
             _text = GetComponent<TMP_Text>();
-            _themeService = ServiceLocator.Get<LightDarkThemeService>();
+            TryBindTheme();
+        }
+
+        private void OnEnable()
+        {
+            TryBindTheme();
+        }
+
+        private void TryBindTheme()
+        {
+            if (_isSubscribed) return;
+
+            if (!ServiceLocator.TryGet(out _themeService))
+                return;
 
             if (_themeService != null)
             {
                 _themeService.OnThemeChanged += Apply;
+                _isSubscribed = true;
                 Apply(_themeService.CurrentPalette);
             }
         }
 
         private void OnDestroy()
         {
-            if (_themeService != null)
+            if (_isSubscribed && _themeService != null)
                 _themeService.OnThemeChanged -= Apply;
         }
 
@@ -51,8 +66,16 @@ namespace GameFoundation.UI
                 _ => Color.white
             };
 
-            if (_text != null) _text.color = color;
-            else if (_graphic != null) _graphic.color = color;
+            if (_text != null)
+            {
+                color.a = _text.color.a;
+                _text.color = color;
+            }
+            else if (_graphic != null)
+            {
+                color.a = _graphic.color.a;
+                _graphic.color = color;
+            }
         }
     }
 }

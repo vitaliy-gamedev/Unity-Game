@@ -15,28 +15,43 @@ namespace GameFoundation.UI
 
         private TMP_Text _text;
         private ILocalizationService _localization;
+        private bool _isSubscribed;
 
         private void Awake()
         {
             _text = GetComponent<TMP_Text>();
+            TryBindLocalization();
+        }
+
+        private void OnEnable()
+        {
+            TryBindLocalization();
+            Refresh();
+        }
+
+        private void TryBindLocalization()
+        {
+            if (_isSubscribed) return;
+
             _localization = ServiceLocator.Get<ILocalizationService>();
 
             if (_localization != null)
             {
                 _localization.OnLanguageChanged += Refresh;
+                _isSubscribed = true;
                 Refresh();
             }
         }
 
         private void OnDestroy()
         {
-            if (_localization != null)
+            if (_isSubscribed && _localization != null)
                 _localization.OnLanguageChanged -= Refresh;
         }
 
         private void Refresh()
         {
-            if (!string.IsNullOrEmpty(key))
+            if (!string.IsNullOrEmpty(key) && _localization != null)
                 _text.text = _localization.Get(key);
         }
 

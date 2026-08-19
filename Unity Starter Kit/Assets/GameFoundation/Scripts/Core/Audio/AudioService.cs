@@ -19,6 +19,9 @@ namespace GameFoundation.Core
         [SerializeField] private AudioClip uiClickClip;
         [SerializeField] private AudioClip uiHoverClip;
 
+        [Header("Music")]
+        [SerializeField] private AudioClip startupMusicClip;
+
         private const string MasterKey = "gf_audio_master";
         private const string MusicKey = "gf_audio_music";
         private const string SfxKey = "gf_audio_sfx";
@@ -43,26 +46,22 @@ namespace GameFoundation.Core
 
         private void Start()
         {
-            // Фікс: Зміна параметрів Mixer має відбуватися у Start(), 
-            // оскільки в Awake() міксер Unity ще не готовий приймати SetFloat.
             ApplyAllVolumes();
+
+            if (startupMusicClip != null)
+                PlayMusic(startupMusicClip);
         }
 
         public void PlayUIClick()
         {
             if (uiClickClip != null && sfxSource != null)
-            {
-                // Використовуємо PlayOneShot, щоб звуки не переривали один одного
                 sfxSource.PlayOneShot(uiClickClip);
-            }
         }
 
         public void PlayUIHover()
         {
             if (uiHoverClip != null && sfxSource != null)
-            {
                 sfxSource.PlayOneShot(uiHoverClip, 0.5f);
-            }
         }
 
         public void SetMasterVolume(float value01)
@@ -89,8 +88,7 @@ namespace GameFoundation.Core
         public void PlayMusic(AudioClip clip, bool loop = true)
         {
             if (musicSource == null || clip == null) return;
-
-            if (musicSource.clip == clip && musicSource.isPlaying) return; // Не перезапускати ту саму мелодію
+            if (musicSource.clip == clip && musicSource.isPlaying) return;
 
             musicSource.clip = clip;
             musicSource.loop = loop;

@@ -271,7 +271,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 786cc0f499d95294ba02c7b14c929693, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.UIButtonFeedback
-  punchScale: 0.12
+  punchScale: 0.92
   punchDuration: 0.1
   hoverScale: 1.03
   playHoverSound: 1

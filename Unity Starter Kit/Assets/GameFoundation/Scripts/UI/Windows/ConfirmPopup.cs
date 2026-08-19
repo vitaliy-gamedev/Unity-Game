@@ -20,6 +20,8 @@ namespace GameFoundation.UI
         private Action _onConfirm;
         private UIService _uiService;
         private ILocalizationService _localization;
+        private string _titleKey;
+        private string _messageKey;
 
         protected override void Awake()
         {
@@ -34,6 +36,8 @@ namespace GameFoundation.UI
             _uiService = ServiceLocator.Get<UIService>();
             _uiService?.Register(this);
             _localization = ServiceLocator.Get<ILocalizationService>();
+            if (_localization != null)
+                _localization.OnLanguageChanged += RefreshLocalization;
 
             if (!ok) return;
 
@@ -43,13 +47,47 @@ namespace GameFoundation.UI
                 _uiService.Back();
             });
             cancelButton.onClick.AddListener(() => _uiService.Back());
+            RefreshButtonLabels();
+        }
+
+        private void OnDestroy()
+        {
+            if (_localization != null)
+                _localization.OnLanguageChanged -= RefreshLocalization;
         }
 
         public void Setup(string titleKey, string messageKey, Action onConfirm)
         {
+            _titleKey = titleKey;
+            _messageKey = messageKey;
             _onConfirm = onConfirm;
-            titleText.text = _localization != null ? _localization.Get(titleKey) : titleKey;
-            messageText.text = _localization != null ? _localization.Get(messageKey) : messageKey;
+            RefreshLocalization();
+        }
+
+        private void RefreshLocalization()
+        {
+            if (!string.IsNullOrEmpty(_titleKey))
+                titleText.text = _localization != null ? _localization.Get(_titleKey) : _titleKey;
+
+            if (!string.IsNullOrEmpty(_messageKey))
+                messageText.text = _localization != null ? _localization.Get(_messageKey) : _messageKey;
+
+            RefreshButtonLabels();
+        }
+
+        private void RefreshButtonLabels()
+        {
+            SetButtonLabel(confirmButton, "popup_yes");
+            SetButtonLabel(cancelButton, "popup_no");
+        }
+
+        private void SetButtonLabel(Button button, string key)
+        {
+            if (button == null) return;
+
+            var label = button.GetComponentInChildren<TMP_Text>(true);
+            if (label != null)
+                label.text = _localization != null ? _localization.Get(key) : key;
         }
     }
 }

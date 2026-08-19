@@ -25,8 +25,11 @@ namespace GameFoundation.Core
     /// </summary>
     public class LocalizationService : ILocalizationService
     {
+        private const string FallbackLanguageCode = "en";
+
         private readonly ISettingsService _settingsService;
         private readonly Dictionary<string, string> _table = new();
+        private readonly Dictionary<string, string> _fallbackTable = new();
 
         public event Action OnLanguageChanged;
 
@@ -42,6 +45,9 @@ namespace GameFoundation.Core
             if (_table.TryGetValue(key, out var value))
                 return value;
 
+            if (_fallbackTable.TryGetValue(key, out var fallback))
+                return fallback;
+
             GFLogger.Warn("LocalizationService", $"Missing key '{key}' for language '{_settingsService.CurrentLanguageCode}'.");
             return $"[{key}]";
         }
@@ -49,21 +55,33 @@ namespace GameFoundation.Core
         private void Reload()
         {
             _table.Clear();
+            _fallbackTable.Clear();
 
-            var asset = Resources.Load<TextAsset>($"Localization/{_settingsService.CurrentLanguageCode}");
-            if (asset == null)
+            LoadTable(FallbackLanguageCode, _fallbackTable);
+
+            if (!LoadTable(_settingsService.CurrentLanguageCode, _table))
             {
                 GFLogger.Warn("LocalizationService", $"No localization file found at Resources/Localization/{_settingsService.CurrentLanguageCode}.json");
-                OnLanguageChanged?.Invoke();
-                return;
             }
+
+            OnLanguageChanged?.Invoke();
+        }
+
+        private static bool LoadTable(string languageCode, Dictionary<string, string> target)
+        {
+            var asset = Resources.Load<TextAsset>($"Localization/{languageCode}");
+            if (asset == null)
+                return false;
 
             var parsed = JsonUtility.FromJson<LocalizationTable>(asset.text);
             if (parsed?.entries != null)
                 foreach (var entry in parsed.entries)
-                    _table[entry.key] = entry.value;
+                {
+                    if (!string.IsNullOrEmpty(entry.key))
+                        target[entry.key] = entry.value;
+                }
 
-            OnLanguageChanged?.Invoke();
+            return true;
         }
     }
 }

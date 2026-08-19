@@ -1,6 +1,9 @@
 using System;
 using GameFoundation.Core;
+using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace GameFoundation.UI
 {
@@ -14,11 +17,11 @@ namespace GameFoundation.UI
     [Serializable]
     public class SimpleThemePalette
     {
-        public Color background = Color.white;
-        public Color panel = new(0.92f, 0.92f, 0.92f);
-        public Color textPrimary = Color.black;
-        public Color textSecondary = new(0.35f, 0.35f, 0.35f);
-        public Color accent = new(0.2f, 0.5f, 1f);
+        public Color background = new(0.96f, 0.95f, 0.92f);
+        public Color panel = new(0.88f, 0.86f, 0.8f);
+        public Color textPrimary = new(0.08f, 0.07f, 0.06f);
+        public Color textSecondary = new(0.34f, 0.31f, 0.27f);
+        public Color accent = new(0.8f, 0.04f, 0.03f);
     }
 
     public class LightDarkThemeService : MonoBehaviour
@@ -26,14 +29,16 @@ namespace GameFoundation.UI
         private const string PrefsKey = "gf_theme_mode";
 
         [SerializeField] private SimpleThemePalette lightPalette = new();
+        [SerializeField] private bool autoStyleSceneUi = true;
+
         [SerializeField]
         private SimpleThemePalette darkPalette = new()
         {
-            background = new Color(0.08f, 0.08f, 0.08f),
-            panel = new Color(0.15f, 0.15f, 0.15f),
-            textPrimary = Color.white,
-            textSecondary = new Color(0.7f, 0.7f, 0.7f),
-            accent = new Color(0.3f, 0.6f, 1f)
+            background = new Color(0.16f, 0.15f, 0.15f),
+            panel = new Color(0.23f, 0.21f, 0.21f),
+            textPrimary = new Color(0.93f, 0.9f, 0.86f),
+            textSecondary = new Color(0.72f, 0.68f, 0.62f),
+            accent = new Color(0.72f, 0.08f, 0.07f)
         };
 
         public ThemeMode CurrentMode { get; private set; }
@@ -49,6 +54,19 @@ namespace GameFoundation.UI
             CurrentMode = PlayerPrefs.HasKey(PrefsKey)
                 ? (ThemeMode)PlayerPrefs.GetInt(PrefsKey)
                 : ThemeMode.Light; // no reliable cross-platform system dark-mode query without a native plugin
+
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            ApplyGlobalUiStyle(CurrentPalette);
+        }
+
+        private void OnDestroy()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            ApplyGlobalUiStyle(CurrentPalette);
         }
 
         public void SetMode(ThemeMode mode)
@@ -59,8 +77,65 @@ namespace GameFoundation.UI
             PlayerPrefs.SetInt(PrefsKey, (int)mode);
             PlayerPrefs.Save();
             OnThemeChanged?.Invoke(CurrentPalette);
+            ApplyGlobalUiStyle(CurrentPalette);
         }
 
         public void Toggle() => SetMode(CurrentMode == ThemeMode.Light ? ThemeMode.Dark : ThemeMode.Light);
+
+        private void ApplyGlobalUiStyle(SimpleThemePalette palette)
+        {
+            if (!autoStyleSceneUi) return;
+
+            var graphics = FindObjectsByType<Graphic>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (var graphic in graphics)
+            {
+                if (graphic == null || graphic.GetComponent<SimpleThemeApplier>() != null)
+                    continue;
+
+                if (graphic is TMP_Text text)
+                {
+                    SetColor(text, palette.textPrimary);
+                    continue;
+                }
+
+                if (graphic is Image image)
+                {
+                    if (ShouldSkipImage(image))
+                        continue;
+
+                    SetColor(image, ColorForImage(image, palette));
+                }
+            }
+        }
+
+        private static bool ShouldSkipImage(Image image)
+        {
+            if (image.sprite == null)
+                return false;
+
+            string spriteName = image.sprite.name;
+            bool builtInUiSprite = spriteName == "Background" || spriteName == "UISprite" || spriteName == "Knob";
+            return !builtInUiSprite && image.GetComponent<Button>() == null && image.GetComponent<Slider>() == null;
+        }
+
+        private static Color ColorForImage(Image image, SimpleThemePalette palette)
+        {
+            string objectName = image.gameObject.name.ToLowerInvariant();
+
+            if (image.GetComponent<Button>() != null || objectName.Contains("fill") || objectName.Contains("checkmark"))
+                return palette.accent;
+
+            if (objectName.Contains("background") || objectName.Contains("viewport") || objectName.Contains("panel") ||
+                objectName.Contains("window") || objectName.Contains("item") || objectName.Contains("dropdown"))
+                return palette.panel;
+
+            return palette.panel;
+        }
+
+        private static void SetColor(Graphic graphic, Color color)
+        {
+            color.a = graphic.color.a;
+            graphic.color = color;
+        }
     }
 }

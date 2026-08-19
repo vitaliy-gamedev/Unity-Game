@@ -79,13 +79,13 @@ namespace GameFoundation.UI
         private IEnumerator RunClose()
         {
             CanvasGroup.interactable = false;
+            CanvasGroup.blocksRaycasts = false;
 
             if (_customAnimator != null)
                 yield return _customAnimator.PlayClose(_rect, CanvasGroup);
             else
                 yield return DefaultAnimateRoutine(opening: false);
 
-            CanvasGroup.blocksRaycasts = false;
             gameObject.SetActive(false);
             OnClosed();
         }

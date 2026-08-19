@@ -4,12 +4,22 @@
     { "key": "main_menu_settings", "value": "Налаштування" },
     { "key": "main_menu_credits", "value": "Автори" },
     { "key": "main_menu_quit", "value": "Вийти" },
+    { "key": "common_back", "value": "Назад" },
+    { "key": "popup_yes", "value": "Так" },
+    { "key": "popup_no", "value": "Ні" },
     { "key": "popup_quit_title", "value": "Вийти з гри?" },
-    { "key": "popup_quit_message", "value": "Весь незбережений прогрес буде втрачено." },
+    { "key": "popup_quit_message", "value": "Увесь незбережений прогрес буде втрачено." },
+    { "key": "settings_title", "value": "Налаштування" },
     { "key": "settings_master_volume", "value": "Загальна гучність" },
     { "key": "settings_music_volume", "value": "Музика" },
     { "key": "settings_sfx_volume", "value": "Звукові ефекти" },
     { "key": "settings_language", "value": "Мова" },
-    { "key": "settings_back", "value": "Назад" }
+    { "key": "settings_back", "value": "Назад" },
+    { "key": "theme_light", "value": "Світла тема" },
+    { "key": "theme_dark", "value": "Темна тема" },
+    { "key": "language_uk", "value": "Українська" },
+    { "key": "language_en", "value": "Англійська" },
+    { "key": "language_fr", "value": "Французька" },
+    { "key": "credits_author", "value": "Автор" }
   ]
 }
