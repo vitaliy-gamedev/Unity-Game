@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using GameFoundation.Core;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace GameFoundation.UI
 {
@@ -14,20 +15,57 @@ namespace GameFoundation.UI
         private readonly Dictionary<Type, IWindow> _windows = new();
         private readonly Stack<IWindow> _stack = new();
 
-        public bool HasWindowsOpen => _stack.Count > 0;
+        public bool HasWindowsOpen
+        {
+            get
+            {
+                PruneDestroyedWindows();
+                return _stack.Count > 0;
+            }
+        }
 
         private void Awake()
         {
             ServiceLocator.Register(this);
         }
 
+        private void OnEnable()
+        {
+            SceneManager.activeSceneChanged += OnActiveSceneChanged;
+        }
+
+        private void OnDisable()
+        {
+            SceneManager.activeSceneChanged -= OnActiveSceneChanged;
+        }
+
         public void Register<T>(T window) where T : IWindow
         {
+            if (IsDestroyed(window)) return;
+
             _windows[window.GetType()] = window;
+        }
+
+        public void Unregister(IWindow window)
+        {
+            if (window == null) return;
+
+            if (_windows.TryGetValue(window.GetType(), out var registered) && ReferenceEquals(registered, window))
+                _windows.Remove(window.GetType());
+
+            RemoveFromStack(window);
+        }
+
+        public void ClearWindows()
+        {
+            _windows.Clear();
+            _stack.Clear();
         }
 
         public T Open<T>() where T : class, IWindow
         {
+            PruneDestroyedWindows();
+
             var window = ResolveWindow<T>();
             if (window == null) return null;
 
@@ -50,6 +88,8 @@ namespace GameFoundation.UI
 
         public T OpenOverlay<T>() where T : class, IWindow
         {
+            PruneDestroyedWindows();
+
             var window = ResolveWindow<T>();
             if (window == null) return null;
 
@@ -64,6 +104,8 @@ namespace GameFoundation.UI
 
         public void Back()
         {
+            PruneDestroyedWindows();
+
             if (_stack.Count <= 1) return;
 
             var current = _stack.Pop();
@@ -85,7 +127,12 @@ namespace GameFoundation.UI
         private IWindow ResolveWindow<T>() where T : class, IWindow
         {
             if (_windows.TryGetValue(typeof(T), out var window))
-                return window;
+            {
+                if (!IsDestroyed(window))
+                    return window;
+
+                _windows.Remove(typeof(T));
+            }
 
             var candidates = UnityEngine.Object.FindObjectsByType<MonoBehaviour>(
                 FindObjectsInactive.Include,
@@ -106,6 +153,8 @@ namespace GameFoundation.UI
 
         private bool TryRevealExisting(IWindow window)
         {
+            PruneDestroyedWindows();
+
             if (!ContainsInStack(window))
                 return false;
 
@@ -121,6 +170,8 @@ namespace GameFoundation.UI
 
         private bool ContainsInStack(IWindow window)
         {
+            PruneDestroyedWindows();
+
             foreach (var item in _stack)
             {
                 if (item == window)
@@ -144,6 +195,42 @@ namespace GameFoundation.UI
 
             while (rebuilt.Count > 0)
                 _stack.Push(rebuilt.Pop());
+        }
+
+        private void PruneDestroyedWindows()
+        {
+            var deadTypes = new List<Type>();
+            foreach (var pair in _windows)
+            {
+                if (IsDestroyed(pair.Value))
+                    deadTypes.Add(pair.Key);
+            }
+
+            foreach (var type in deadTypes)
+                _windows.Remove(type);
+
+            if (_stack.Count == 0) return;
+
+            var rebuilt = new Stack<IWindow>();
+            while (_stack.Count > 0)
+            {
+                var item = _stack.Pop();
+                if (!IsDestroyed(item))
+                    rebuilt.Push(item);
+            }
+
+            while (rebuilt.Count > 0)
+                _stack.Push(rebuilt.Pop());
+        }
+
+        private void OnActiveSceneChanged(Scene oldScene, Scene newScene)
+        {
+            ClearWindows();
+        }
+
+        private static bool IsDestroyed(IWindow window)
+        {
+            return window == null || window is UnityEngine.Object unityObject && unityObject == null;
         }
     }
 }

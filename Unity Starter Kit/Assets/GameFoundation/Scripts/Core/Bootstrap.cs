@@ -1,15 +1,17 @@
 using GameFoundation.UI;
+using GameFoundation.Pro.Achievements;
+using GameFoundation.Pro.Addressables;
+using GameFoundation.Pro.Analytics;
+using GameFoundation.Pro.CloudSave;
+using GameFoundation.Pro.Pooling;
+using GameFoundation.Pro.Theme;
 using UnityEngine;
 
 namespace GameFoundation.Core
 {
     /// <summary>
-    /// Lives in the Bootstrap scene only — this is the very first scene that runs
-    /// when the game starts (set it as index 0 in Build Settings). It registers
-    /// every Core service in ServiceLocator, then loads MainMenuScene.
-    ///
-    /// See README_UA.md section 3 for the exact GameObject hierarchy this script
-    /// expects to find via the Inspector fields below.
+    /// Lives in the Bootstrap scene only. It registers every Core service in
+    /// ServiceLocator, keeps the service hierarchy alive, then loads MainMenuScene.
     /// </summary>
     public class Bootstrap : MonoBehaviour
     {
@@ -17,6 +19,11 @@ namespace GameFoundation.Core
         [SerializeField] private AudioService audioService;
         [SerializeField] private UIService uiService;
         [SerializeField] private SceneTransitionService sceneTransitionService;
+        [SerializeField] private PoolService poolService;
+        [SerializeField] private ThemeService themeService;
+
+        [Header("Pro services")]
+        [SerializeField] private AchievementDefinition[] achievementDefinitions = new AchievementDefinition[0];
 
         [SerializeField] private string firstSceneToLoad = "MainMenuScene";
 
@@ -24,25 +31,13 @@ namespace GameFoundation.Core
 
         private void Awake()
         {
-            // CRITICAL: DontDestroyOnLoad only protects THIS GameObject and its
-            // CHILDREN — not scene siblings. AudioService, UIService, and
-            // SceneTransitionService must be nested as children of this exact
-            // GameObject in the hierarchy (see README_UA.md section 3), otherwise
-            // they get destroyed the instant MainMenuScene loads and replaces
-            // BootstrapScene.
+            ServiceLocator.Clear();
             DontDestroyOnLoad(gameObject);
 
-            // Fail fast and loud: Debug.LogError does NOT stop script execution on
-            // its own, so without the early "return" below, a single missing
-            // Inspector reference here would silently register a null service and
-            // then cause five confusing NullReferenceExceptions somewhere else in
-            // the game, far away from the actual cause. Catching it here means
-            // there's exactly one error message, and it tells you exactly what to
-            // drag into which field.
             _referencesValid = ValidateReferences();
             if (!_referencesValid)
             {
-                GFLogger.Error("Bootstrap", "Startup aborted — fix the missing references above (see Bootstrap GameObject in the Inspector), then press Play again.");
+                GFLogger.Error("Bootstrap", "Startup aborted. Fix the missing references on the Bootstrap GameObject, then press Play again.");
                 return;
             }
 
@@ -51,7 +46,7 @@ namespace GameFoundation.Core
 
         private void Start()
         {
-            if (!_referencesValid) return; // already logged in Awake — don't cascade into more errors
+            if (!_referencesValid) return;
 
             ServiceLocator.Get<ISceneService>().LoadSceneAsync(firstSceneToLoad);
         }
@@ -62,13 +57,13 @@ namespace GameFoundation.Core
             ok &= GFLogger.RequireField(audioService, nameof(Bootstrap), nameof(audioService));
             ok &= GFLogger.RequireField(uiService, nameof(Bootstrap), nameof(uiService));
             ok &= GFLogger.RequireField(sceneTransitionService, nameof(Bootstrap), nameof(sceneTransitionService));
+            ok &= GFLogger.RequireField(poolService, nameof(Bootstrap), nameof(poolService));
+            ok &= GFLogger.RequireField(themeService, nameof(Bootstrap), nameof(themeService));
             return ok;
         }
 
         private void RegisterServices()
         {
-            // Order matters here: LocalizationService's constructor immediately reads
-            // ISettingsService.CurrentLanguageCode, so Settings must be registered first.
             var settingsService = new SettingsService();
             ServiceLocator.Register<ISettingsService>(settingsService);
 
@@ -78,17 +73,24 @@ namespace GameFoundation.Core
             var saveService = new SaveService();
             ServiceLocator.Register<ISaveService>(saveService);
 
-            // MonoBehaviour services: assigned via Inspector because they need to live
-            // on real GameObjects (AudioSources, Canvas, coroutines). Already
-            // null-checked in ValidateReferences() above, so these are guaranteed
-            // non-null here.
+            ServiceLocator.Register(uiService);
             ServiceLocator.Register<IAudioService>(audioService);
             ServiceLocator.Register<ISceneService>(sceneTransitionService);
+            ServiceLocator.Register(poolService);
+            ServiceLocator.Register(themeService);
 
-            // UIService registers itself in its own Awake() — see UIService.cs.
-            // Nothing to do here as long as it exists somewhere in this scene
-            // (Bootstrap scene is the simplest place, per README_UA.md section 3).
-            _ = uiService; // kept as an Inspector reference for convenience/visibility and the null-check above
+            var definitions = achievementDefinitions;
+            if (definitions == null || definitions.Length == 0)
+                definitions = Resources.LoadAll<AchievementDefinition>("Achievements");
+
+            ServiceLocator.Register<IAchievementService>(new LocalAchievementService(definitions));
+            ServiceLocator.Register<IAnalyticsService>(new ConsoleAnalyticsService());
+            ServiceLocator.Register<ICloudSaveProvider>(new LocalCloudSaveStub());
+            ServiceLocator.Register<IAssetProvider>(new ResourcesAssetProvider());
+
+            var lightDarkThemeService = GetComponentInChildren<LightDarkThemeService>(true);
+            if (lightDarkThemeService != null)
+                ServiceLocator.Register(lightDarkThemeService);
 
             GFLogger.Log("Bootstrap", "All Core services registered.");
         }

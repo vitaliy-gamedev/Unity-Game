@@ -527,6 +527,7 @@ GameObject:
   - component: {fileID: 135626726}
   - component: {fileID: 135626728}
   - component: {fileID: 135626727}
+  - component: {fileID: 135626729}
   m_Layer: 5
   m_Name: CreditsWindow
   m_TagString: Untagged
@@ -609,6 +610,24 @@ CanvasGroup:
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
+--- !u!114 &135626729
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 135626725}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac7cafe636a207548868b7d585047791, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Pro.Animation.AdvancedWindowAnimator
+  openEase: 11
+  openDuration: 0.25
+  openScaleFrom: 0.85
+  closeEase: 4
+  closeDuration: 0.15
+  closeScaleTo: 0.9
 --- !u!1 &151774491
 GameObject:
   m_ObjectHideFlags: 0
@@ -2214,7 +2233,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6086927907848434079, guid: d0aa7cb3125516640a9643e042ddff5a, type: 3}
       propertyPath: m_Name
-      value: Button (2)
+      value: ButtonCredits
       objectReference: {fileID: 0}
     - target: {fileID: 7290910155598279010, guid: d0aa7cb3125516640a9643e042ddff5a, type: 3}
       propertyPath: m_text
@@ -2583,10 +2602,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.UI.ThemeToggleButton
   label: {fileID: 1372993883}
-  lightLabelText: Light Mode
-  darkLabelText: Dark Mode
-  lightLabelKey: theme_light
-  darkLabelKey: theme_dark
+  lightLabelText: Fantasy Day
+  darkLabelText: Moonlit Fantasy
+  lightLabelKey: theme_fantasy_day
+  darkLabelKey: theme_fantasy_night
 --- !u!114 &776690336
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2646,6 +2665,7 @@ GameObject:
   - component: {fileID: 794178453}
   - component: {fileID: 794178455}
   - component: {fileID: 794178454}
+  - component: {fileID: 794178456}
   m_Layer: 5
   m_Name: ConfirmPopup
   m_TagString: Untagged
@@ -2728,6 +2748,24 @@ CanvasGroup:
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
+--- !u!114 &794178456
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 794178452}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac7cafe636a207548868b7d585047791, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Pro.Animation.AdvancedWindowAnimator
+  openEase: 11
+  openDuration: 0.25
+  openScaleFrom: 0.85
+  closeEase: 4
+  closeDuration: 0.15
+  closeScaleTo: 0.9
 --- !u!1 &822202384
 GameObject:
   m_ObjectHideFlags: 0
@@ -3757,7 +3795,7 @@ GameObject:
   - component: {fileID: 1241885535}
   - component: {fileID: 1241885536}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: GameTitle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3777,10 +3815,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1624033862}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 676, y: 335}
-  m_SizeDelta: {x: 400, y: 150}
+  m_AnchorMin: {x: 0.5, y: 1}
+  m_AnchorMax: {x: 0.5, y: 1}
+  m_AnchoredPosition: {x: 0, y: -150}
+  m_SizeDelta: {x: 900, y: 170}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1241885533
 MonoBehaviour:
@@ -3802,7 +3840,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Game Name
+  m_text: DEADBAND
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -3829,12 +3867,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 69.75
-  m_fontSizeBase: 36
+  m_fontSize: 84
+  m_fontSizeBase: 84
   m_fontWeight: 400
   m_enableAutoSizing: 1
-  m_fontSizeMin: 18
-  m_fontSizeMax: 72
+  m_fontSizeMin: 48
+  m_fontSizeMax: 84
   m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
@@ -4191,14 +4229,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.8962264, g: 0.8962264, b: 0.8962264, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 4f8d68c60de54564bbd7e862857e0d7c, type: 3}
+  m_Sprite: {fileID: 21300000, guid: cf44ee93eb214990a8ff38b55d3850e2, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -4223,7 +4261,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1285418274}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ccea31a4986884049ad383cd0ae5bdf6, type: 3}
   m_Name: 
@@ -4943,7 +4981,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6086927907848434079, guid: d0aa7cb3125516640a9643e042ddff5a, type: 3}
       propertyPath: m_Name
-      value: Button (3)
+      value: ButtonQuit
       objectReference: {fileID: 0}
     - target: {fileID: 7290910155598279010, guid: d0aa7cb3125516640a9643e042ddff5a, type: 3}
       propertyPath: m_text
@@ -5611,6 +5649,7 @@ GameObject:
   - component: {fileID: 1624033862}
   - component: {fileID: 1624033864}
   - component: {fileID: 1624033863}
+  - component: {fileID: 1624033865}
   m_Layer: 5
   m_Name: MainMenuWindow
   m_TagString: Untagged
@@ -5684,6 +5723,12 @@ MonoBehaviour:
   settingsButton: {fileID: 0}
   creditsButton: {fileID: 0}
   quitButton: {fileID: 0}
+  lightButtonColor: {r: 0.2, g: 0.36, b: 0.4, a: 0.94}
+  darkButtonColor: {r: 0.12, g: 0.25, b: 0.29, a: 0.96}
+  lightButtonTextColor: {r: 0.96, g: 0.91, b: 0.8, a: 1}
+  darkButtonTextColor: {r: 1, g: 0.94, b: 0.82, a: 1}
+  lightTitleColor: {r: 0.96, g: 0.86, b: 0.62, a: 1}
+  darkTitleColor: {r: 1, g: 0.91, b: 0.7, a: 1}
 --- !u!225 &1624033864
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -5696,6 +5741,24 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &1624033865
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1624033861}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac7cafe636a207548868b7d585047791, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Pro.Animation.AdvancedWindowAnimator
+  openEase: 11
+  openDuration: 0.25
+  openScaleFrom: 0.85
+  closeEase: 4
+  closeDuration: 0.15
+  closeScaleTo: 0.9
 --- !u!1 &1624512527
 GameObject:
   m_ObjectHideFlags: 0
@@ -6673,7 +6736,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6086927907848434079, guid: d0aa7cb3125516640a9643e042ddff5a, type: 3}
       propertyPath: m_Name
-      value: Button (1)
+      value: ButtonSettings
       objectReference: {fileID: 0}
     - target: {fileID: 7290910155598279010, guid: d0aa7cb3125516640a9643e042ddff5a, type: 3}
       propertyPath: m_text
@@ -6787,6 +6850,7 @@ GameObject:
   - component: {fileID: 2057220390}
   - component: {fileID: 2057220392}
   - component: {fileID: 2057220391}
+  - component: {fileID: 2057220393}
   m_Layer: 5
   m_Name: SettingsWindow
   m_TagString: Untagged
@@ -6875,6 +6939,24 @@ CanvasGroup:
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
+--- !u!114 &2057220393
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2057220389}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac7cafe636a207548868b7d585047791, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Pro.Animation.AdvancedWindowAnimator
+  openEase: 11
+  openDuration: 0.25
+  openScaleFrom: 0.85
+  closeEase: 4
+  closeDuration: 0.15
+  closeScaleTo: 0.9
 --- !u!1 &2074671271
 GameObject:
   m_ObjectHideFlags: 0
@@ -7319,6 +7401,7 @@ GameObject:
   - component: {fileID: 2123930770}
   - component: {fileID: 2123930772}
   - component: {fileID: 2123930771}
+  - component: {fileID: 2123930773}
   m_Layer: 5
   m_Name: LevelSelectWindow
   m_TagString: Untagged
@@ -7402,6 +7485,24 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &2123930773
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2123930769}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac7cafe636a207548868b7d585047791, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameFoundation.Pro.Animation.AdvancedWindowAnimator
+  openEase: 11
+  openDuration: 0.25
+  openScaleFrom: 0.85
+  closeEase: 4
+  closeDuration: 0.15
+  closeScaleTo: 0.9
 --- !u!1001 &7834626409824510539
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7492,7 +7593,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6086927907848434079, guid: d0aa7cb3125516640a9643e042ddff5a, type: 3}
       propertyPath: m_Name
-      value: Button
+      value: ButtonPlay
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

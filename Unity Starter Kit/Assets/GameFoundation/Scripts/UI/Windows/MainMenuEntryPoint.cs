@@ -1,18 +1,14 @@
 using GameFoundation.Core;
+using GameFoundation.Pro.Achievements;
 using UnityEngine;
 
 namespace GameFoundation.UI
 {
     /// <summary>
     /// Put this on the Canvas root (or any always-active GameObject) in
-    /// MainMenuScene. Every window deactivates itself in its own Awake() — by
-    /// design, so they all start closed — which means something has to
-    /// explicitly open the first one. Start() runs after every window's Awake()
-    /// has already registered it with UIService, so this is guaranteed to work
-    /// regardless of GameObject order in the hierarchy.
-    ///
-    /// Without this component, MainMenuScene loads with every window inactive
-    /// and the player sees a blank screen.
+    /// MainMenuScene. Windows start closed, so this component opens the first
+    /// screen after scene startup. UIService can resolve inactive scene windows
+    /// even when Awake order prevented an early registration.
     /// </summary>
     public class MainMenuEntryPoint : MonoBehaviour
     {
@@ -21,11 +17,22 @@ namespace GameFoundation.UI
             var uiService = ServiceLocator.Get<UIService>();
             if (uiService == null)
             {
-                Debug.LogError("[MainMenuEntryPoint] UIService is not registered — did MainMenuScene load without going through Bootstrap first?");
+                Debug.LogError("[MainMenuEntryPoint] UIService is not registered. Did MainMenuScene load without going through Bootstrap first?");
                 return;
             }
 
+            // Some legacy sample scenes contain this entry point on both the Canvas
+            // and a standalone object. Only the first one should build the Pro overlay.
+            if (FindFirstObjectByType<AchievementToastPresenter>() != null)
+                return;
+
+            var toastPresenter = GetComponent<AchievementToastPresenter>();
+            if (toastPresenter == null)
+                toastPresenter = gameObject.AddComponent<AchievementToastPresenter>();
+
+            toastPresenter.Initialize();
             uiService.Open<MainMenuWindow>();
+            ServiceLocator.Get<IAchievementService>()?.Unlock("first_launch");
         }
     }
 }

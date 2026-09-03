@@ -8,7 +8,7 @@ namespace GameFoundation.UI
 {
     /// <summary>
     /// Reference implementation of ISceneService: fade out via LoadingOverlay,
-    /// load the target scene additively/async, report progress, fade back in.
+    /// load the target scene async, report progress, fade back in.
     /// Register an instance of this in your Bootstrap under ISceneService.
     /// </summary>
     public class SceneTransitionService : MonoBehaviour, ISceneService
@@ -17,6 +17,7 @@ namespace GameFoundation.UI
         [SerializeField] private float minimumVisibleTime = 0.5f; // avoids a jarring flash on fast loads
 
         private bool _overlayValid;
+        private bool _isLoading;
 
         private void Awake()
         {
@@ -25,6 +26,14 @@ namespace GameFoundation.UI
 
         public void LoadSceneAsync(string sceneName, Action<float> onProgress = null, Action onComplete = null)
         {
+            if (_isLoading)
+            {
+                GFLogger.Warn(nameof(SceneTransitionService), $"Ignored duplicate scene load request for '{sceneName}'.");
+                return;
+            }
+
+            _isLoading = true;
+
             if (!_overlayValid)
             {
                 // Can't show a fade/progress bar without it, but scene loading itself
@@ -41,6 +50,7 @@ namespace GameFoundation.UI
         private IEnumerator LoadWithoutOverlay(string sceneName, Action onComplete)
         {
             yield return SceneManager.LoadSceneAsync(sceneName);
+            _isLoading = false;
             onComplete?.Invoke();
         }
 
@@ -72,6 +82,7 @@ namespace GameFoundation.UI
             yield return op;
 
             yield return overlay.FadeOut();
+            _isLoading = false;
             onComplete?.Invoke();
         }
     }

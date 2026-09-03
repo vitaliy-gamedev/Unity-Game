@@ -1,6 +1,12 @@
 {
   "entries": [
     { "key": "main_menu_play", "value": "Play" },
+    { "key": "main_menu_continue", "value": "Continue" },
+    { "key": "main_menu_new_game", "value": "New Game" },
+    { "key": "main_menu_load_game", "value": "Load Game" },
+    { "key": "load_game_title", "value": "Load saved game?" },
+    { "key": "load_game_message", "value": "Continue from the latest autosave." },
+    { "key": "level_select_title", "value": "SELECT OPERATION" },
     { "key": "main_menu_settings", "value": "Settings" },
     { "key": "main_menu_credits", "value": "Credits" },
     { "key": "main_menu_quit", "value": "Quit" },
@@ -14,12 +20,24 @@
     { "key": "settings_music_volume", "value": "Music" },
     { "key": "settings_sfx_volume", "value": "SFX" },
     { "key": "settings_language", "value": "Language" },
+    { "key": "settings_theme", "value": "Visual Theme" },
     { "key": "settings_back", "value": "Back" },
     { "key": "theme_light", "value": "Light Mode" },
     { "key": "theme_dark", "value": "Dark Mode" },
+    { "key": "theme_fantasy_day", "value": "Fantasy Day" },
+    { "key": "theme_fantasy_night", "value": "Moonlit Fantasy" },
+    { "key": "theme_signal_green", "value": "Signal Green" },
+    { "key": "theme_amber_alert", "value": "Amber Alert" },
+    { "key": "achievement_unlocked", "value": "Achievement unlocked" },
+    { "key": "achievement_first_launch_title", "value": "The Journey Begins" },
+    { "key": "achievement_first_launch_description", "value": "Enter the fantasy world for the first time." },
+    { "key": "achievement_theme_explorer_title", "value": "World Shaper" },
+    { "key": "achievement_theme_explorer_description", "value": "Change the world's visual theme." },
     { "key": "language_uk", "value": "Ukrainian" },
     { "key": "language_en", "value": "English" },
     { "key": "language_fr", "value": "French" },
-    { "key": "credits_author", "value": "Author" }
+    { "key": "credits_author", "value": "Author" },
+    { "key": "credits_developed_by", "value": "DEVELOPED BY\nviGin" },
+    { "key": "credits_framework", "value": "GAME FOUNDATION PRO • UNITY" }
   ]
 }

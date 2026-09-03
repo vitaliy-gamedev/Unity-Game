@@ -12,7 +12,7 @@ namespace GameFoundation.UI
     /// Repaints on Awake and again every time LightDarkThemeService.SetMode()/Toggle() fires.
     /// </summary>
     [DisallowMultipleComponent]
-    public class SimpleThemeApplier : MonoBehaviour
+    public class SimpleThemeApplier : MonoBehaviour, IThemeGraphicController
     {
         [SerializeField] private SimpleThemeRole role;
 

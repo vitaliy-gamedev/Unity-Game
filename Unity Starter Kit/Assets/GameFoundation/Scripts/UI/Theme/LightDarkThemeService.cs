@@ -10,9 +10,9 @@ namespace GameFoundation.UI
     public enum ThemeMode { Light, Dark }
 
     /// <summary>
-    /// Two fixed palettes, one toggle — no ScriptableObjects, no custom color roles.
-    /// If you need more than two themes or per-project custom palettes, that's what
-    /// the Pro ThemeData/ThemeService system is for; this one is intentionally simple.
+    /// Two fixed palettes, one toggle. No ScriptableObjects, no custom color roles.
+    /// If you need more than two themes or per-project custom palettes, that is
+    /// where the Pro ThemeData/ThemeService system belongs.
     /// </summary>
     [Serializable]
     public class SimpleThemePalette
@@ -29,7 +29,7 @@ namespace GameFoundation.UI
         private const string PrefsKey = "gf_theme_mode";
 
         [SerializeField] private SimpleThemePalette lightPalette = new();
-        [SerializeField] private bool autoStyleSceneUi = true;
+        [SerializeField] private bool autoStyleSceneUi = false;
 
         [SerializeField]
         private SimpleThemePalette darkPalette = new()
@@ -48,15 +48,19 @@ namespace GameFoundation.UI
 
         private void Awake()
         {
-            // Реєструємо сервіс у ServiceLocator, щоб інші компоненти (наприклад, тугл) могли його знайти
             ServiceLocator.Register(this);
 
             CurrentMode = PlayerPrefs.HasKey(PrefsKey)
                 ? (ThemeMode)PlayerPrefs.GetInt(PrefsKey)
-                : ThemeMode.Light; // no reliable cross-platform system dark-mode query without a native plugin
+                : ThemeMode.Dark;
 
             SceneManager.sceneLoaded += OnSceneLoaded;
             ApplyGlobalUiStyle(CurrentPalette);
+        }
+
+        private void Start()
+        {
+            ServiceLocator.Register(this);
         }
 
         private void OnDestroy()
@@ -89,7 +93,7 @@ namespace GameFoundation.UI
             var graphics = FindObjectsByType<Graphic>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             foreach (var graphic in graphics)
             {
-                if (graphic == null || graphic.GetComponent<SimpleThemeApplier>() != null)
+                if (graphic == null || graphic.GetComponent<IThemeGraphicController>() != null)
                     continue;
 
                 if (graphic is TMP_Text text)

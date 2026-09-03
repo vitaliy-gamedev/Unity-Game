@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace GameFoundation.Core
 {
@@ -10,6 +11,12 @@ namespace GameFoundation.Core
     public static class ServiceLocator
     {
         private static readonly Dictionary<Type, object> Services = new();
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            Clear();
+        }
 
         public static void Register<T>(T instance) where T : class
         {

@@ -1,6 +1,12 @@
 {
   "entries": [
     { "key": "main_menu_play", "value": "Jouer" },
+    { "key": "main_menu_continue", "value": "Continuer" },
+    { "key": "main_menu_new_game", "value": "Nouvelle partie" },
+    { "key": "main_menu_load_game", "value": "Charger la partie" },
+    { "key": "load_game_title", "value": "Charger la partie ?" },
+    { "key": "load_game_message", "value": "Continuer depuis la dernière sauvegarde automatique." },
+    { "key": "level_select_title", "value": "CHOISIR L’OPÉRATION" },
     { "key": "main_menu_settings", "value": "Paramètres" },
     { "key": "main_menu_credits", "value": "Crédits" },
     { "key": "main_menu_quit", "value": "Quitter" },
@@ -14,12 +20,24 @@
     { "key": "settings_music_volume", "value": "Musique" },
     { "key": "settings_sfx_volume", "value": "Effets sonores" },
     { "key": "settings_language", "value": "Langue" },
+    { "key": "settings_theme", "value": "Thème visuel" },
     { "key": "settings_back", "value": "Retour" },
     { "key": "theme_light", "value": "Mode clair" },
     { "key": "theme_dark", "value": "Mode sombre" },
+    { "key": "theme_fantasy_day", "value": "Fantasy diurne" },
+    { "key": "theme_fantasy_night", "value": "Fantasy au clair de lune" },
+    { "key": "theme_signal_green", "value": "Signal vert" },
+    { "key": "theme_amber_alert", "value": "Alerte ambre" },
+    { "key": "achievement_unlocked", "value": "Succès débloqué" },
+    { "key": "achievement_first_launch_title", "value": "Le voyage commence" },
+    { "key": "achievement_first_launch_description", "value": "Entrez pour la première fois dans le monde fantastique." },
+    { "key": "achievement_theme_explorer_title", "value": "Façonneur de monde" },
+    { "key": "achievement_theme_explorer_description", "value": "Changez le thème visuel du monde." },
     { "key": "language_uk", "value": "Ukrainien" },
     { "key": "language_en", "value": "Anglais" },
     { "key": "language_fr", "value": "Français" },
-    { "key": "credits_author", "value": "Auteur" }
+    { "key": "credits_author", "value": "Auteur" },
+    { "key": "credits_developed_by", "value": "DÉVELOPPÉ PAR\nviGin" },
+    { "key": "credits_framework", "value": "GAME FOUNDATION PRO • UNITY" }
   ]
 }

@@ -1,6 +1,12 @@
 {
   "entries": [
     { "key": "main_menu_play", "value": "Грати" },
+    { "key": "main_menu_continue", "value": "Продовжити" },
+    { "key": "main_menu_new_game", "value": "Нова гра" },
+    { "key": "main_menu_load_game", "value": "Завантажити гру" },
+    { "key": "load_game_title", "value": "Завантажити гру?" },
+    { "key": "load_game_message", "value": "Продовжити з останнього автозбереження." },
+    { "key": "level_select_title", "value": "ВИБІР ОПЕРАЦІЇ" },
     { "key": "main_menu_settings", "value": "Налаштування" },
     { "key": "main_menu_credits", "value": "Автори" },
     { "key": "main_menu_quit", "value": "Вийти" },
@@ -14,12 +20,24 @@
     { "key": "settings_music_volume", "value": "Музика" },
     { "key": "settings_sfx_volume", "value": "Звукові ефекти" },
     { "key": "settings_language", "value": "Мова" },
+    { "key": "settings_theme", "value": "Візуальна тема" },
     { "key": "settings_back", "value": "Назад" },
     { "key": "theme_light", "value": "Світла тема" },
     { "key": "theme_dark", "value": "Темна тема" },
+    { "key": "theme_fantasy_day", "value": "Денне фентезі" },
+    { "key": "theme_fantasy_night", "value": "Місячне фентезі" },
+    { "key": "theme_signal_green", "value": "Зелений сигнал" },
+    { "key": "theme_amber_alert", "value": "Бурштинова тривога" },
+    { "key": "achievement_unlocked", "value": "Досягнення відкрито" },
+    { "key": "achievement_first_launch_title", "value": "Подорож починається" },
+    { "key": "achievement_first_launch_description", "value": "Уперше увійти до фантазійного світу." },
+    { "key": "achievement_theme_explorer_title", "value": "Творець світу" },
+    { "key": "achievement_theme_explorer_description", "value": "Змінити візуальну тему світу." },
     { "key": "language_uk", "value": "Українська" },
     { "key": "language_en", "value": "Англійська" },
     { "key": "language_fr", "value": "Французька" },
-    { "key": "credits_author", "value": "Автор" }
+    { "key": "credits_author", "value": "Автор" },
+    { "key": "credits_developed_by", "value": "РОЗРОБНИК\nviGin" },
+    { "key": "credits_framework", "value": "GAME FOUNDATION PRO • UNITY" }
   ]
 }

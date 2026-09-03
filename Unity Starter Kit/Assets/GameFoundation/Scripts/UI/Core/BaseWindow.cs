@@ -1,15 +1,15 @@
 using System;
 using System.Collections;
-using GameFoundation.Core; // <--- ОСЬ ЦЕЙ РЯДОК ПОТРІБЕН ДОДАТИ
+using GameFoundation.Core;
 using UnityEngine;
 
 namespace GameFoundation.UI
 {
     /// <summary>
     /// Base class for every menu screen (MainMenu, Settings, LevelSelect, popups...).
-    /// Handles interaction locking + delegates the actual open/close animation to
-    /// an IWindowAnimator if one is present on the same GameObject, otherwise falls
-    /// back to a simple built-in fade+scale. Subclasses never touch animation code.
+    /// Handles interaction locking and delegates the actual open/close animation to
+    /// an IWindowAnimator if one is present on the same GameObject. Otherwise it
+    /// falls back to a simple built-in fade and scale animation.
     /// </summary>
     [RequireComponent(typeof(CanvasGroup))]
     public abstract class BaseWindow : MonoBehaviour, IWindow
@@ -30,12 +30,18 @@ namespace GameFoundation.UI
         {
             CanvasGroup = GetComponent<CanvasGroup>();
             _rect = transform as RectTransform;
-            _customAnimator = GetComponent<IWindowAnimator>(); // null in Free — that's expected
+            _customAnimator = GetComponent<IWindowAnimator>();
 
-            // Автоматично реєструємо вікно в UIService
-            ServiceLocator.Get<UIService>()?.Register(this);
+            if (ServiceLocator.TryGet<UIService>(out var uiService))
+                uiService.Register(this);
 
             gameObject.SetActive(false);
+        }
+
+        protected virtual void OnDestroy()
+        {
+            if (ServiceLocator.TryGet<UIService>(out var uiService))
+                uiService.Unregister(this);
         }
 
         public virtual void Open()
@@ -66,7 +72,7 @@ namespace GameFoundation.UI
         private IEnumerator RunOpen()
         {
             CanvasGroup.interactable = false;
-            CanvasGroup.blocksRaycasts = true; // block input immediately so clicks can't slip through mid-animation
+            CanvasGroup.blocksRaycasts = true;
 
             if (_customAnimator != null)
                 yield return _customAnimator.PlayOpen(_rect, CanvasGroup);
@@ -90,11 +96,6 @@ namespace GameFoundation.UI
             OnClosed();
         }
 
-        /// <summary>
-        /// Built-in Free-tier animation: plain fade + slight scale, one fixed ease curve.
-        /// This is intentionally simple — the Pro IWindowAnimator is where per-project
-        /// easing/Sequence control lives.
-        /// </summary>
         private IEnumerator DefaultAnimateRoutine(bool opening)
         {
             float from = opening ? 0f : 1f;
