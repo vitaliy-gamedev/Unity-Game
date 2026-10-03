@@ -1,0 +1,16 @@
+# This showcase deliberately includes code and documentation only.
+Library/
+Temp/
+Logs/
+Builds/
+UserSettings/
+*.mp4
+*.zip
+*.unitypackage
+*.unity
+*.prefab
+*.fbx
+*.png
+*.jpg
+*.mp3
+*.wav
