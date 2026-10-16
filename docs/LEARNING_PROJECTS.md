@@ -33,6 +33,7 @@ IT STEP coursework and personal Unity experiments, not commercial jobs or finish
 | [Runner](../Runner/) | Spawning, coins and camera scripts |
 | [Sudoku](../Sudoku/) | Puzzle manager and tiles |
 | [Sudoky](../Sudoky/) | Generation and cell/game management |
+| [TereinCore](../TereinCore/) | Historical scene with third-party Easy Weapons assets |
 | [WarGame](../WarGame/) | Coins, items, shop and portal scripts |
 | [WariorGame](../WariorGame/) | Movement, attacks, damage and healing |
 | [XO](../XO/) | Grid and cell exercise |
