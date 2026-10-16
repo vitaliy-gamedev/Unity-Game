@@ -19,3 +19,8 @@ MemoryCaptures/
 
 .DS_Store
 Thumbs.db
+
+# Unity / Android generated compiler output
+.utmp/
+*_BackUpThisFolder_ButDontShipItWithYourGame/
+*_BurstDebugInformation_DoNotShip/

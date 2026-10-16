@@ -1,30 +1,42 @@
-# Unity learning projects by Vitaliy Nortczov
+# Vitaliy Nortczov | Unity & C# Portfolio
 
-This repository contains my Unity coursework and learning projects. The older folders retain their original course-project structure.
+Junior / Trainee Unity Developer based in Ukraine, open to remote opportunities.
+I build game prototypes, integrate gameplay systems, and iterate through hands-on testing.
 
-## Selected project
+[Play RED ZONE](https://vitaliy-gamedev.itch.io/red-zone) · [Portfolio](https://gamefoundation-pro.nortczov.chatgpt.site/) · [LinkedIn](https://www.linkedin.com/in/vitaliy-nortczov-39ab00400) · [Independent C# coursework](https://github.com/vitaliy-gamedev/IT_STEP_WORKS)
 
-### DEADBAND Tactical Squad Extraction
+## Start here
 
-A student Unity prototype presented at IT STEP Academy, with squad combat, a SIGNAL mechanic and an extraction objective. It is not a finished commercial game.
+| Project | What to review | Status |
+| --- | --- | --- |
+| [RED ZONE](Portfolio/RED_ZONE/README.md) | Playable Windows build, screenshots, architecture and public GDDs | Personal run-and-gun prototype |
+| [DEADBAND](Portfolio/DEADBAND/README.md) | 57 C# files: SIGNAL, squad behaviour, combat and mission flow | Educational source showcase + gameplay video |
+| [GameFoundation](Portfolio/GameFoundation/README.md) | Menus, settings, localization, UI themes and platform extensions | Published personal Unity toolkit |
 
-- [Gameplay video on LinkedIn](https://www.linkedin.com/feed/update/urn:li:activity:7501318394416328704/)
-- [Source showcase and implementation notes](Portfolio/DEADBAND/README.md)
+![RED ZONE Jungle gameplay](Portfolio/RED_ZONE/Media/jungle-combat.jpg)
 
-The showcase is a **source-only snapshot**, not a complete runnable Unity project. Third-party assets and commercial GameFoundation framework files are deliberately excluded.
+## For a quick technical review
 
-## GameFoundation
+1. Open [RED ZONE's architecture overview](Portfolio/RED_ZONE/README.md#technical-architecture) and try the prototype.
+2. Read the [DEADBAND code review guide](Portfolio/DEADBAND/README.md#suggested-code-review-order).
+3. Review my [independent C# projects](https://github.com/vitaliy-gamedev/IT_STEP_WORKS): 2048, file/JSON services and LINQ exercises.
 
-My separate Unity toolkit includes Starter, Pro, Windows Expansion and Mobile Expansion. Releases are available on itch.io and Fab; this repository does not redistribute the commercial toolkit.
+## Learning archive
 
-- [Portfolio and project details](https://gamefoundation-pro.nortczov.chatgpt.site/)
-- [Products on itch.io](https://vitaliy-gamedev.itch.io/)
+The older top-level folders preserve my IT STEP coursework and Unity experiments. They are **learning projects, not commercial employment**. Use the [project catalogue](docs/LEARNING_PROJECTS.md) to navigate them; the selected projects above are the best starting point.
 
-## My contribution and AI assistance
+Each Unity folder is a separate project. Check `ProjectSettings/ProjectVersion.txt` before opening it in Unity Hub. Historical projects may require external assets or older packages; a clean import of the entire archive has not been verified.
 
-I assembled and configured projects in Unity, integrated scenes, assets and UI, wrote small scripts, tested flows, reported issues and prepared demonstrations and releases. ChatGPT and Codex contributed substantially to code implementation, debugging and corrections. The published code demonstrates the project implementation, not a claim that I independently wrote every line.
+## My contribution
+
+I define requirements and design decisions, write part of the C# code, integrate components, configure scenes and UI, reproduce bugs and test revisions. Game projects include AI-assisted implementation; independent C# coursework is clearly separated in IT_STEP_WORKS. Each selected entry explains its scope and dependencies.
 
 ## Contact
 
+**Open to remote Junior / Trainee Unity Developer roles and game-development collaboration.**
+
+- [vitaliy.gamedev.ua@gmail.com](mailto:vitaliy.gamedev.ua@gmail.com)
 - [LinkedIn](https://www.linkedin.com/in/vitaliy-nortczov-39ab00400)
-- vitaliy.gamedev.ua@gmail.com
+- English: A2
+
+Third-party resources retain their original rights. This portfolio does not redistribute the commercial GameFoundation toolkit or the full RED ZONE source project.

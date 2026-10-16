@@ -10,11 +10,11 @@ This portfolio snapshot contains 57 gameplay C# source files from the local DEAD
 
 No Unity scenes, prefabs, models, textures, animation clips, music, build files or third-party packages are redistributed here. The commercial GameFoundation toolkit and editor builders are also excluded.
 
-## Contribution and AI assistance
+## My contribution
 
-I assembled and configured the Unity project, integrated assets, scenes and menus, tested gameplay scenarios, reported issues and prepared the student demonstration. I wrote some small scripts and directed implementation changes.
+I defined requirements, wrote part of the C# code, assembled and configured the Unity project, integrated assets/scenes/menus, tested gameplay scenarios, reproduced issues and prepared the student demonstration.
 
-ChatGPT / Codex substantially assisted with code implementation, debugging and corrections. The code is presented transparently as AI-assisted project work. Third-party assets used in the demonstration remain the property of their respective creators.
+Implementation combines my own work and AI assistance. Third-party resources visible in the demonstration retain their original rights.
 
 ## Source map
 
@@ -29,11 +29,11 @@ ChatGPT / Codex substantially assisted with code implementation, debugging and c
 
 ## Suggested code review order
 
-1. `Source/Signal/SignalConfig.cs` and `SignalSystem.cs`: configuration, sampling and events.
-2. `Source/Squad/SquadFormation.cs`: slot generation and nearest-slot assignment.
-3. `Source/Mission/MissionOutcomeRules.cs`: extraction result rules.
-4. `Source/Mission/MissionManager.cs`: orchestration and dependency on GameFoundation.
-5. `Source/Combat/PlayerWeaponController.cs`: player-facing combat flow.
+1. [SignalConfig](Source/Signal/SignalConfig.cs) and [SignalSystem](Source/Signal/SignalSystem.cs): configuration, sampling and events.
+2. [SquadFormation](Source/Squad/SquadFormation.cs): slot generation and nearest-slot assignment.
+3. [MissionOutcomeRules](Source/Mission/MissionOutcomeRules.cs): extraction result rules.
+4. [MissionManager](Source/Mission/MissionManager.cs): orchestration and dependency on GameFoundation.
+5. [PlayerWeaponController](Source/Combat/PlayerWeaponController.cs): player-facing combat flow.
 
 ## Runtime and dependencies
 
@@ -50,3 +50,4 @@ No open-source license is granted by this showcase. Review the source as portfol
 - [Portfolio](https://gamefoundation-pro.nortczov.chatgpt.site/)
 - [LinkedIn](https://www.linkedin.com/in/vitaliy-nortczov-39ab00400)
 - [GitHub profile](https://github.com/vitaliy-gamedev)
+- [Back to portfolio](../../README.md)
