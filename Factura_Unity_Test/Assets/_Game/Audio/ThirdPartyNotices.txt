@@ -1,0 +1,19 @@
+BACKGROUND MUSIC
+
+Night Club Chill 100 BPM — Alexander Ehlers (tricksntraps)
+Collection: T & T Free Cyberpunk Pack 2
+Source: https://opengameart.org/content/t-t-free-cyberpunk-pack-2
+Original file: https://opengameart.org/sites/default/files/night_club_chill_100bpm.ogg
+License stated by the author: CC0 1.0 Universal
+License: https://creativecommons.org/publicdomain/zero/1.0/
+Verified: 2026-10-18
+
+BackgroundLoop.ogg is a 38.4-second excerpt starting at 38.4 seconds,
+with short edge fades and loudness normalization, encoded as stereo Vorbis.
+Credit is retained voluntarily; no endorsement by the composer is implied.
+
+SOUND EFFECTS
+
+Shot variants, impact, car hit and explosion are original synthesized effects
+created with deterministic oscillator and noise synthesis during development.
+No third-party recordings or samples are used for those effects.
