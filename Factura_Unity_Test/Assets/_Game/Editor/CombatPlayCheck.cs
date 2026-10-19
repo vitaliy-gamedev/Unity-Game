@@ -37,6 +37,7 @@ namespace Factura.Editor
         private static bool hitReactionChecked;
         private static float maxLegOpposition;
         private static float resultEnteredAt;
+        private static int afterReset;
 
         static CombatPlayCheck()
         {
@@ -64,6 +65,33 @@ namespace Factura.Editor
                 if (deadline == 0) deadline = EditorApplication.timeSinceStartup + 45;
                 Check(EditorApplication.timeSinceStartup < deadline, "Integration check timed out.");
                 float elapsed = Time.time - phaseTime;
+                if (afterReset != 0)
+                {
+                    if (game.IsPreparing) return;
+                    var data = new SerializedObject(car);
+                    if (afterReset == 1)
+                    {
+                        Check(game.State == GameState.Ready && spawner.Barrel.IsAlive && spawner.KilledCount == 0,
+                            "Run reset restores the barrel and kill counter.");
+                        data.FindProperty("routeLength").floatValue = 1;
+                        data.ApplyModifiedPropertiesWithoutUndo();
+                        Click();
+                    }
+                    else
+                    {
+                        Check(game.State == GameState.Ready, "Win also resets to Ready with a separate press.");
+                        data.FindProperty("routeLength").floatValue = 100;
+                        data.ApplyModifiedPropertiesWithoutUndo();
+                        touch = InputSystem.AddDevice<Touchscreen>("FacturaCheckTouch");
+                        QueueTouch(UnityEngine.InputSystem.TouchPhase.Began, 0.5f);
+                        Check(game.State == GameState.Playing, "Primary touch starts the run.");
+                        QueueTouch(UnityEngine.InputSystem.TouchPhase.Moved, 0.6f);
+                        QueueMouse(new Vector2(Screen.width * 0.2f, Screen.height * 0.2f), false);
+                    }
+                    afterReset = 0;
+                    Next();
+                    return;
+                }
                 if (phase == 4 && attacker.State == EnemyState.Chase)
                 {
                     var runningSkin = attacker.GetComponentInChildren<SkinnedMeshRenderer>();
@@ -74,6 +102,7 @@ namespace Factura.Editor
                 {
                     if (Time.time < 0.3f) return;
                     game = UnityEngine.Object.FindFirstObjectByType<GameManager>();
+                    if (game.IsPreparing) return;
                     game.StateChanged += state =>
                     {
                         if (state == GameState.Win || state == GameState.Lose) resultEnteredAt = Time.unscaledTime;
@@ -202,7 +231,7 @@ namespace Factura.Editor
                     Click();
                     Next();
                 }
-                else if (phase == 7 && elapsed > 0.1f)
+                else if (phase == 7 && elapsed > 0.1f && !game.IsPreparing)
                 {
                     Check(game.State == GameState.Ready && health.Current == 100 && car.Progress == 0 && spawner.KilledCount == 0,
                         $"One press resets to Ready, HP, progress and kills (state={game.State}, hp={health.Current}, progress={car.Progress:F4}, kills={spawner.KilledCount}).");
@@ -236,13 +265,7 @@ namespace Factura.Editor
                 {
                     Check(game.State == GameState.Lose, "Second fatal hit ends the barrel check run.");
                     Click();
-                    Check(game.State == GameState.Ready && spawner.Barrel.IsAlive && spawner.KilledCount == 0, "Run reset restores the barrel and kill counter.");
-                    // A short, in-memory route validates finish handling without altering the saved level.
-                    var data = new SerializedObject(car);
-                    data.FindProperty("routeLength").floatValue = 1;
-                    data.ApplyModifiedPropertiesWithoutUndo();
-                    Click();
-                    Next();
+                    afterReset = 1;
                 }
                 else if (phase == 10 && game.State == GameState.Win && Time.unscaledTime - resultEnteredAt > 0.5f)
                 {
@@ -251,16 +274,7 @@ namespace Factura.Editor
                     Check(GameObject.Find("Game UI").transform.Find("Result/Result title").GetComponent<Text>().text == "You win", "Exact win label.");
                     Capture("Win");
                     Click();
-                    Check(game.State == GameState.Ready, "Win also resets to Ready with a separate press.");
-                    var data = new SerializedObject(car);
-                    data.FindProperty("routeLength").floatValue = 100;
-                    data.ApplyModifiedPropertiesWithoutUndo();
-                    touch = InputSystem.AddDevice<Touchscreen>("FacturaCheckTouch");
-                    QueueTouch(UnityEngine.InputSystem.TouchPhase.Began, 0.5f);
-                    Check(game.State == GameState.Playing, "Primary touch starts the run.");
-                    QueueTouch(UnityEngine.InputSystem.TouchPhase.Moved, 0.6f);
-                    QueueMouse(new Vector2(Screen.width * 0.2f, Screen.height * 0.2f), false);
-                    Next();
+                    afterReset = 2;
                 }
                 else if (phase == 11 && elapsed > 0.15f)
                 {

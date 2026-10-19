@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 
 namespace Factura
@@ -20,8 +21,36 @@ namespace Factura
         public int KilledCount { get; private set; }
         public event Action<int> KillsChanged;
         public ExplosiveBarrel Barrel => barrel;
+        public bool IsPreparing { get; private set; }
 
+        // Deterministic immediate setup for editor fixtures; gameplay uses the frame-budgeted async path below.
         public void Prepare(Collider car, Health carHealth)
+        {
+            if (IsPreparing) throw new InvalidOperationException("Enemy preparation is already running.");
+            foreach (int batch in SpawnBatches(car, carHealth)) { }
+        }
+
+        public async Awaitable PrepareAsync(Collider car, Health carHealth, CancellationToken cancellation)
+        {
+            cancellation.ThrowIfCancellationRequested();
+            if (IsPreparing) throw new InvalidOperationException("Enemy preparation is already running.");
+            IsPreparing = true;
+            try
+            {
+                cancellation.ThrowIfCancellationRequested();
+                foreach (int batch in SpawnBatches(car, carHealth))
+                    await Awaitable.NextFrameAsync(cancellation);
+                cancellation.ThrowIfCancellationRequested();
+            }
+            catch
+            {
+                ClearEnemies();
+                throw;
+            }
+            finally { IsPreparing = false; }
+        }
+
+        private void ClearEnemies()
         {
             foreach (var enemy in enemies)
             {
@@ -31,6 +60,11 @@ namespace Factura
                 Destroy(enemy.gameObject);
             }
             enemies.Clear();
+        }
+
+        private IEnumerable<int> SpawnBatches(Collider car, Health carHealth)
+        {
+            ClearEnemies();
             KilledCount = 0;
             KillsChanged?.Invoke(0);
             var random = useFixedSeed ? new System.Random(seed) : new System.Random();
@@ -63,6 +97,8 @@ namespace Factura
                 enemy.Initialize(car, carHealth, enemies);
                 enemy.GetComponent<Health>().Died += OnEnemyDied;
                 enemies.Add(enemy);
+                // Unity object creation stays on the main thread, with at most four enemies per frame.
+                if ((index + 1) % 4 == 0 && index + 1 < enemyCount) yield return index + 1;
             }
             PlaceBarrelNearGroup(car.transform.position.x);
         }

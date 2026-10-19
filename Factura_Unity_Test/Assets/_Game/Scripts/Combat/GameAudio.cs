@@ -109,7 +109,7 @@ namespace Factura
             cursor = shotIndex = 0;
             nextImpact = nextCarHit = duckUntil = 0;
             music.Stop();
-            if (focused && !muted && music.clip) music.Play();
+            if (focused && !muted && music.clip && !game.IsPreparing) music.Play();
         }
 
         private void OnShot()

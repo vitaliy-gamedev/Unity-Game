@@ -6936,10 +6936,10 @@ GameObject:
   - component: {fileID: 1418256351}
   - component: {fileID: 1418256350}
   - component: {fileID: 1418256349}
-  - component: {fileID: 1418256348}
   - component: {fileID: 1418256353}
   - component: {fileID: 1418256355}
   - component: {fileID: 1418256354}
+  - component: {fileID: 1418256356}
   m_Layer: 0
   m_Name: Game Systems
   m_TagString: Untagged
@@ -6947,28 +6947,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1418256348
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1418256347}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4d32d460647376441856d5c2caecb54d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Factura.GameBootstrap
-  game: {fileID: 1418256350}
-  input: {fileID: 1418256349}
-  car: {fileID: 2067237806774676326}
-  turret: {fileID: 2067237806774676325}
-  projectiles: {fileID: 1418256351}
-  carHealth: {fileID: 2067237806774676324}
-  followCamera: {fileID: 1476797327}
-  ui: {fileID: 1861814661}
-  spawner: {fileID: 1596813431}
-  combatEffects: {fileID: 1418256353}
 --- !u!114 &1418256349
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7162,6 +7140,31 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1418256356
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1418256347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a20babebe278fd4692a8c3c3e1575b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Factura.GameLifetimeScope
+  parentReference:
+    TypeName: 
+  autoRun: 1
+  autoInjectGameObjects: []
+  game: {fileID: 1418256350}
+  input: {fileID: 1418256349}
+  car: {fileID: 2067237806774676326}
+  turret: {fileID: 2067237806774676325}
+  projectiles: {fileID: 1418256351}
+  followCamera: {fileID: 1476797327}
+  ui: {fileID: 1861814661}
+  spawner: {fileID: 1596813431}
+  combatEffects: {fileID: 1418256353}
 --- !u!1 &1427317352
 GameObject:
   m_ObjectHideFlags: 0

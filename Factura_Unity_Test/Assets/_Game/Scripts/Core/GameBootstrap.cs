@@ -1,25 +1,48 @@
+using System;
+using System.Threading;
 using Unity.Cinemachine;
 using UnityEngine;
+using VContainer.Unity;
 
 namespace Factura
 {
-    public sealed class GameBootstrap : MonoBehaviour
+    // Plain C# coordinator. The scene scope supplies dependencies and owns this lifetime.
+    public sealed class GameBootstrap : IAsyncStartable, IDisposable
     {
-        [SerializeField] private GameManager game;
-        [SerializeField] private InputReader input;
-        [SerializeField] private CarController car;
-        [SerializeField] private TurretController turret;
-        [SerializeField] private ProjectilePool projectiles;
-        [SerializeField] private Health carHealth;
-        [SerializeField] private CinemachineCamera followCamera;
-        [SerializeField] private GameUI ui;
-        [SerializeField] private Spawner spawner;
-        [SerializeField] private CombatEffects combatEffects;
+        private readonly GameManager game;
+        private readonly InputReader input;
+        private readonly CarController car;
+        private readonly TurretController turret;
+        private readonly ProjectilePool projectiles;
+        private readonly Health carHealth;
+        private readonly CinemachineCamera followCamera;
+        private readonly GameUI ui;
+        private readonly Spawner spawner;
+        private readonly CombatEffects combatEffects;
+        private CancellationTokenSource lifetime;
+        private bool resetting;
+        private bool disposed;
 
-        private void Awake() => turret.Initialize(projectiles, spawner.Enemies, spawner.Barrel);
-
-        private void OnEnable()
+        public GameBootstrap(GameManager game, InputReader input, CarController car, TurretController turret,
+            ProjectilePool projectiles, Health carHealth, CinemachineCamera followCamera, GameUI ui,
+            Spawner spawner, CombatEffects combatEffects)
         {
+            this.game = game;
+            this.input = input;
+            this.car = car;
+            this.turret = turret;
+            this.projectiles = projectiles;
+            this.carHealth = carHealth;
+            this.followCamera = followCamera;
+            this.ui = ui;
+            this.spawner = spawner;
+            this.combatEffects = combatEffects;
+        }
+
+        public async Awaitable StartAsync(CancellationToken cancellation = default)
+        {
+            lifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
+            turret.Initialize(projectiles, spawner.Enemies, spawner.Barrel);
             input.Pressed += game.HandlePress;
             input.AimDelta += turret.Aim;
             input.PointerAim += turret.AimAtScreenPosition;
@@ -28,12 +51,15 @@ namespace Factura
             carHealth.Died += game.RequestLoss;
             carHealth.Changed += ui.ShowHealth;
             game.StateChanged += ApplyState;
-            game.ResetRequested += ResetRun;
+            game.ResetRequested += OnResetRequested;
             spawner.KillsChanged += ui.ShowKills;
+            await PrepareRunAsync(lifetime.Token);
         }
 
-        private void OnDisable()
+        public void Dispose()
         {
+            if (disposed) return;
+            disposed = true;
             input.Pressed -= game.HandlePress;
             input.AimDelta -= turret.Aim;
             input.PointerAim -= turret.AimAtScreenPosition;
@@ -42,11 +68,15 @@ namespace Factura
             carHealth.Died -= game.RequestLoss;
             carHealth.Changed -= ui.ShowHealth;
             game.StateChanged -= ApplyState;
-            game.ResetRequested -= ResetRun;
+            game.ResetRequested -= OnResetRequested;
             spawner.KillsChanged -= ui.ShowKills;
+            // Unsubscribe before cancellation can resume the pending async continuation.
+            lifetime?.Cancel();
+            lifetime?.Dispose();
         }
 
-        private void Start() => ResetRun();
+        // async void is restricted to this event boundary; the awaited operation handles errors/cancellation.
+        private async void OnResetRequested() => await PrepareRunAsync(lifetime.Token);
 
         private void ApplyState(GameState state)
         {
@@ -58,16 +88,31 @@ namespace Factura
             ui.ShowState(state);
         }
 
-        private void ResetRun()
+        private async Awaitable PrepareRunAsync(CancellationToken cancellation)
         {
-            projectiles.ClearActive();
-            combatEffects.Clear();
-            car.ResetToStart();
-            turret.ResetAim();
-            carHealth.ResetHealth();
-            spawner.Prepare(car.GetComponent<Collider>(), carHealth);
-            followCamera.PreviousStateIsValid = false;
-            game.EnterReady();
+            if (disposed || resetting) return;
+            resetting = true;
+            try
+            {
+                cancellation.ThrowIfCancellationRequested();
+                game.BeginPreparation();
+                projectiles.ClearActive();
+                combatEffects.Clear();
+                car.ResetToStart();
+                turret.ResetAim();
+                carHealth.ResetHealth();
+                await spawner.PrepareAsync(car.GetComponent<Collider>(), carHealth, cancellation);
+                cancellation.ThrowIfCancellationRequested();
+                followCamera.PreviousStateIsValid = false;
+                game.EnterReady();
+            }
+            catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { }
+            catch (Exception error)
+            {
+                Debug.LogException(error);
+                if (ui) ui.ShowPreparationError();
+            }
+            finally { resetting = false; }
         }
     }
 }

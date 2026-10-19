@@ -11,11 +11,13 @@ namespace Factura
         private bool lossPending;
         private float resultTime;
         public GameState State { get; private set; } = GameState.Ready;
+        public bool IsPreparing { get; private set; } = true;
         public event Action<GameState> StateChanged;
         public event Action ResetRequested;
 
         public void HandlePress()
         {
+            if (IsPreparing) return;
             if (State == GameState.Ready) SetState(GameState.Playing);
             else if (State != GameState.Playing && Time.unscaledTime - resultTime >= 0.3f)
                 ResetRequested?.Invoke();
@@ -23,6 +25,14 @@ namespace Factura
 
         public void EnterReady()
         {
+            IsPreparing = false;
+            finishPending = lossPending = false;
+            SetState(GameState.Ready);
+        }
+
+        public void BeginPreparation()
+        {
+            IsPreparing = true;
             finishPending = lossPending = false;
             SetState(GameState.Ready);
         }

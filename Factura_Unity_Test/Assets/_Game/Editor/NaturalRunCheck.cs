@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text;
+using Unity.Collections;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -41,6 +42,12 @@ namespace Factura.Editor
         private static Texture2D videoPixels;
         private static RenderTexture videoTarget;
         private static byte[] videoBuffer;
+        private static FileStream audioCapture;
+        private static byte[] audioBuffer;
+        private static bool audioRecording;
+        private static int videoFrames;
+        private static long audioFrames;
+        private static int audioSampleRate;
 
         static NaturalRunCheck()
         {
@@ -73,12 +80,13 @@ namespace Factura.Editor
             {
                 if (deadline == 0) deadline = EditorApplication.timeSinceStartup + (recording ? 240 : 150);
                 Require(EditorApplication.timeSinceStartup < deadline, "Full route check timeout.");
-                // Debounce uses real time, but the review only needs two seconds of result frames.
-                if (encoder != null && (resultTime == 0 || Time.time - resultFrameTime < 2)) Capture(null);
+                if (encoder != null) Capture(null);
                 if (!game)
                 {
                     if (Time.time < .3f) return;
-                    game = UnityEngine.Object.FindFirstObjectByType<GameManager>();
+                    var candidate = UnityEngine.Object.FindFirstObjectByType<GameManager>();
+                    if (candidate.IsPreparing) return;
+                    game = candidate;
                     car = UnityEngine.Object.FindFirstObjectByType<CarController>();
                     health = car.GetComponent<Health>();
                     turret = car.GetComponentInChildren<TurretController>();
@@ -107,8 +115,9 @@ namespace Factura.Editor
                 }
                 if (pendingStart >= 0)
                 {
-                    if (Time.time < pendingStart) return;
+                    if (Time.time < pendingStart || game.IsPreparing) return;
                     pendingStart = -1;
+                    if (run == (recording ? 2 : 4)) { Finish(0); return; }
                     StartRun();
                     return;
                 }
@@ -141,14 +150,14 @@ namespace Factura.Editor
                     resultFrameTime = Time.time;
                     Debug.Log(Report.ToString());
                 }
-                if (Time.unscaledTime - resultTime < (recording ? 2 : .4f)) return;
+                if (recording ? Time.time - resultFrameTime < 2 || Time.unscaledTime - resultTime < .35f
+                    : Time.unscaledTime - resultTime < .4f) return;
+                if (recording && run == 1) { Finish(0); return; }
                 game.HandlePress();
                 Require(game.State == GameState.Ready && car.Progress == 0 && health.Current == health.Maximum && spawner.KilledCount == 0,
                     "Result did not reset to a clean Ready state.");
                 run++;
-                if (run == (recording ? 2 : 4)) { Finish(0); return; }
-                if (recording) pendingStart = Time.time + .75f;
-                else StartRun();
+                pendingStart = Time.time + (recording ? .75f : .1f);
             }
             catch (Exception exception)
             {
@@ -241,6 +250,8 @@ namespace Factura.Editor
                 {
                     pixels.GetRawTextureData<byte>().CopyTo(videoBuffer);
                     encoder.StandardInput.BaseStream.Write(videoBuffer, 0, videoBuffer.Length);
+                    CaptureAudio();
+                    videoFrames++;
                 }
                 else File.WriteAllBytes(path, pixels.EncodeToPNG());
             }
@@ -280,6 +291,12 @@ namespace Factura.Editor
                 }
             };
             Require(encoder.Start(), "Could not start video encoder.");
+            Require(AudioSettings.speakerMode == AudioSpeakerMode.Stereo, "Offline review recording expects stereo output.");
+            audioSampleRate = AudioSettings.outputSampleRate;
+            audioCapture = new FileStream("Library/Factura_ReviewAudio.f32", FileMode.Create, FileAccess.Write);
+            audioRecording = AudioRenderer.Start();
+            Require(audioRecording, "Could not start offline Unity audio capture.");
+            UnityEngine.Object.FindFirstObjectByType<GameAudio>().SendMessage("OnApplicationFocus", true);
             var label = new GameObject("Autoplay review label", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
             label.transform.SetParent(GameObject.Find("Game UI").transform, false);
             var rect = (RectTransform)label.transform;
@@ -289,7 +306,7 @@ namespace Factura.Editor
             var text = label.GetComponent<Text>();
             text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             text.fontSize = 18;
-            text.text = "AUTOMATED PLAYTEST / UNITY EDITOR";
+            text.text = "UNITY EDITOR / SCRIPTED INPUT";
             text.color = new Color(1, 1, 1, .8f);
             text.raycastTarget = false;
         }
@@ -299,6 +316,9 @@ namespace Factura.Editor
             SessionState.SetBool(Key, false);
             SessionState.SetBool(VideoKey, false);
             EditorApplication.update -= Tick;
+            if (audioRecording) { AudioRenderer.Stop(); audioRecording = false; }
+            audioCapture?.Dispose();
+            audioCapture = null;
             Time.captureDeltaTime = 0;
             if (encoder != null)
             {
@@ -307,6 +327,10 @@ namespace Factura.Editor
                     encoder.StandardInput.Close();
                     Require(encoder.WaitForExit(20000), "Video encoder did not finish.");
                     Require(encoder.ExitCode == 0, "Video encoding failed: " + encoder.StandardError.ReadToEnd());
+                    double videoDuration = videoFrames / 30.0;
+                    double audioDuration = (double)audioFrames / audioSampleRate;
+                    Require(Math.Abs(videoDuration - audioDuration) < .04, "Offline audio and video duration diverged.");
+                    Report.AppendLine($"PASS: Video {videoDuration:F2}s / {videoFrames} frames; actual Unity stereo audio {audioDuration:F2}s at {audioSampleRate} Hz.");
                     Report.AppendLine("PASS: Local autoplay review video encoded (not a manual playtest or device performance test).");
                 }
                 catch (Exception exception) { code = 1; Report.AppendLine("FAIL: " + exception.Message); }
@@ -317,6 +341,18 @@ namespace Factura.Editor
             File.WriteAllText("Library/FacturaNaturalRunCheck.txt", Report.ToString());
             Debug.Log("Factura full route check\n" + Report);
             EditorApplication.Exit(code);
+        }
+
+        private static void CaptureAudio()
+        {
+            int frames = AudioRenderer.GetSampleCountForCaptureFrame();
+            using var samples = new NativeArray<float>(frames * 2, Allocator.Temp);
+            Require(AudioRenderer.Render(samples), "Unity offline audio rendering failed.");
+            int bytes = samples.Length * sizeof(float);
+            if (audioBuffer == null || audioBuffer.Length != bytes) audioBuffer = new byte[bytes];
+            samples.Reinterpret<byte>(sizeof(float)).CopyTo(audioBuffer);
+            audioCapture.Write(audioBuffer, 0, bytes);
+            audioFrames += frames;
         }
     }
 }

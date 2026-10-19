@@ -94,7 +94,20 @@ namespace Factura
             bool result = state == GameState.Win || state == GameState.Lose;
             resultPanel.SetActive(result);
             if (result) resultText.text = state == GameState.Win ? "You win" : "You lose";
-            if (state == GameState.Ready) damagePulse = 0;
+            if (state == GameState.Ready)
+            {
+                damagePulse = 0;
+                playButton.interactable = !game.IsPreparing;
+                playButton.GetComponentInChildren<Text>().text = game.IsPreparing ? "PREPARING..." : "PLAY";
+                RefreshSoundLabel();
+            }
+        }
+
+        public void ShowPreparationError()
+        {
+            playButton.interactable = false;
+            playButton.GetComponentInChildren<Text>().text = "SETUP ERROR";
+            readyPanel.transform.Find("Hint").GetComponent<Text>().text = "Could not prepare the level. Please restart.";
         }
     }
 }

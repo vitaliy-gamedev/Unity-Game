@@ -65,7 +65,9 @@ namespace Factura.Editor
                 if (!game)
                 {
                     if (Time.time < .3f) return;
-                    game = UnityEngine.Object.FindFirstObjectByType<GameManager>();
+                    var candidate = UnityEngine.Object.FindFirstObjectByType<GameManager>();
+                    if (candidate.IsPreparing) return;
+                    game = candidate;
                     car = UnityEngine.Object.FindFirstObjectByType<CarController>();
                     health = car.GetComponent<Health>();
                     spawner = UnityEngine.Object.FindFirstObjectByType<Spawner>();

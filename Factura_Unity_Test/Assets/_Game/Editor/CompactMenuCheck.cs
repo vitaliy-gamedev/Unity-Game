@@ -55,6 +55,7 @@ namespace Factura.Editor
                 {
                     if (Time.time < .3f) return;
                     game = UnityEngine.Object.FindFirstObjectByType<GameManager>();
+                    if (game.IsPreparing) return;
                     audio = UnityEngine.Object.FindFirstObjectByType<GameAudio>();
                     ui = UnityEngine.Object.FindFirstObjectByType<GameUI>();
                     health = UnityEngine.Object.FindFirstObjectByType<CarController>().GetComponent<Health>();
@@ -114,7 +115,7 @@ namespace Factura.Editor
                         "A separate result tap restores Ready, the menu and the selected sound setting.");
                     Next();
                 }
-                else if (phase == 9 && elapsed > .12)
+                else if (phase == 9 && elapsed > .12 && !game.IsPreparing)
                 {
                     Queue(new Vector2(Screen.width * .1f, Screen.height * .6f), true);
                     Queue(new Vector2(Screen.width * .1f, Screen.height * .6f), false);
