@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 namespace Factura
 {
@@ -11,6 +14,7 @@ namespace Factura
         private bool isHeld;
         private InputDevice activeDevice;
         private Vector2 previousPosition;
+        private readonly List<RaycastResult> uiHits = new();
 
         public event Action Pressed;
         public event Action<float> AimDelta;
@@ -53,7 +57,7 @@ namespace Factura
             activeDevice = context.control.device;
             isHeld = true;
             previousPosition = ((Pointer)activeDevice).position.ReadValue();
-            Pressed?.Invoke();
+            if (!IsOverButton(previousPosition)) Pressed?.Invoke();
             if (activeDevice is Mouse) PointerAim?.Invoke(previousPosition);
             else AimDelta?.Invoke(0); // A touch takes ownership even before its first movement.
         }
@@ -63,6 +67,18 @@ namespace Factura
             if (context.control.device != activeDevice) return;
             isHeld = false;
             activeDevice = null;
+        }
+
+        private bool IsOverButton(Vector2 screenPosition)
+        {
+            if (!EventSystem.current) return false;
+            // Input callbacks precede the UI update, so raycast these coordinates instead of using last frame's hover state.
+            var pointer = new PointerEventData(EventSystem.current) { position = screenPosition };
+            uiHits.Clear();
+            EventSystem.current.RaycastAll(pointer, uiHits);
+            foreach (var hit in uiHits)
+                if (hit.gameObject.GetComponentInParent<Button>()) return true;
+            return false;
         }
 
         private void OnPosition(InputAction.CallbackContext context)

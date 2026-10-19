@@ -14,9 +14,53 @@ namespace Factura
         [SerializeField] private Text resultText;
         [SerializeField] private Text killsText;
         [SerializeField] private Image damageOverlay;
+        [SerializeField] private GameManager game;
+        [SerializeField] private GameAudio gameAudio;
+        [SerializeField] private Button playButton;
+        [SerializeField] private Button soundButton;
+        [SerializeField] private Button quitButton;
+        private Text soundLabel;
         private int lastHealth = -1;
         private int lastPercent = -1;
         private float damagePulse;
+
+        private void OnEnable()
+        {
+            playButton.onClick.AddListener(Play);
+            soundButton.onClick.AddListener(ToggleSound);
+            quitButton.onClick.AddListener(Quit);
+            soundLabel = soundButton.GetComponentInChildren<Text>();
+            RefreshSoundLabel();
+        }
+
+        private void OnDisable()
+        {
+            playButton.onClick.RemoveListener(Play);
+            soundButton.onClick.RemoveListener(ToggleSound);
+            quitButton.onClick.RemoveListener(Quit);
+        }
+
+        private void Play()
+        {
+            if (game.State == GameState.Ready) game.HandlePress();
+        }
+
+        private void ToggleSound()
+        {
+            gameAudio.SetMuted(!gameAudio.IsMuted);
+            RefreshSoundLabel();
+        }
+
+        private void RefreshSoundLabel() => soundLabel.text = gameAudio.IsMuted ? "SOUND: OFF" : "SOUND: ON";
+
+        private void Quit()
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+        }
 
         private void Update()
         {
