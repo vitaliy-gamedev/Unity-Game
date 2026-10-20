@@ -1,3 +1,4 @@
+// Перевірка кнопок через Input System та EventSystem в окремому процесі Unity.
 using System;
 using System.IO;
 using System.Text;
@@ -10,12 +11,6 @@ using UnityEngine.UI;
 
 namespace Factura.Editor
 {
-    /// <summary>
-    /// Інтеграційна перевірка компактного меню та взаємодії UI з ігровим вводом.
-    /// Надсилає події віртуальної миші в Input System, а не просто викликає Button.onClick.
-    /// Це дозволяє виявити, коли клік Sound помилково також запускає авто.
-    /// Сценарій призначений для окремого процесу Editor, який він закриває в Finish.
-    /// </summary>
     [InitializeOnLoad]
     public static class CompactMenuCheck
     {
@@ -34,13 +29,11 @@ namespace Factura.Editor
 
         static CompactMenuCheck()
         {
-            // Переживає перезавантаження домену тільки для явного запуску Run.
             if (SessionState.GetBool(Key, false)) EditorApplication.update += Tick;
         }
 
         public static void Run()
         {
-            // Працюємо зі збереженою сценою та її справжніми кнопками/посиланнями.
             EditorSceneManager.OpenScene("Assets/_Game/Scenes/Gameplay.unity", OpenSceneMode.Single);
             SessionState.SetBool(Key, true);
             EditorApplication.update += Tick;
@@ -61,8 +54,6 @@ namespace Factura.Editor
                 double elapsed = EditorApplication.timeSinceStartup - phaseTime;
                 if (phase == 0)
                 {
-                    // Чекаємо готового рівня та налаштовуємо окрему віртуальну мишу.
-                    // Копія InputSettings дозволяє автоматизованому процесу працювати без фокусу.
                     if (Time.time < .3f) return;
                     game = UnityEngine.Object.FindFirstObjectByType<GameManager>();
                     if (game.IsPreparing) return;
@@ -82,8 +73,6 @@ namespace Factura.Editor
                     Move("Sound", false);
                     Next();
                 }
-                // Натискання й відпускання рознесені в часі: uGUI завершує клік
-                // на відпусканні, а InputReader бачить Press раніше. Перевіряємо обидві фази.
                 else if (phase == 1 && elapsed > .12) { Move("Sound", true); Next(); }
                 else if (phase == 2 && elapsed > .12)
                 {
@@ -120,8 +109,6 @@ namespace Factura.Editor
                 }
                 else if (phase == 8 && elapsed > .75)
                 {
-                    // Після поразки один клік повертає меню та збережений mute,
-                    // а запуск нового заїзду вимагає вже наступного окремого натискання.
                     Check(game.State == GameState.Lose, "Loss still shows the result state.");
                     Queue(new Vector2(Screen.width * .5f, Screen.height * .6f), true);
                     Queue(new Vector2(Screen.width * .5f, Screen.height * .6f), false);
@@ -142,14 +129,12 @@ namespace Factura.Editor
 
         private static void Move(string button, bool held)
         {
-            // Координати беремо з поточного RectTransform, не жорстко зашиваємо пікселі кнопок.
             Vector2 point = RectTransformUtility.WorldToScreenPoint(null, ready.Find(button).position);
             Queue(point, held);
         }
 
         private static void Queue(Vector2 position, bool held)
         {
-            // Подія проходить через справжні InputAction та EventSystem гри.
             InputSystem.QueueStateEvent(mouse, new MouseState { position = position }.WithButton(MouseButton.Left, held));
             InputSystem.Update();
         }
@@ -157,13 +142,11 @@ namespace Factura.Editor
         private static void Next() { phase++; phaseTime = EditorApplication.timeSinceStartup; }
         private static void Check(bool condition, string message)
         {
-            // Лог зберігає конкретну умову, а не лише загальне повідомлення «тест успішний».
             if (!condition) throw new InvalidOperationException(message);
             Report.AppendLine("PASS: " + message);
         }
         private static void Finish(int code)
         {
-            // Віртуальний пристрій прибираємо; звіт не додається до публічних ігрових ресурсів.
             SessionState.SetBool(Key, false);
             EditorApplication.update -= Tick;
             if (mouse != null) InputSystem.RemoveDevice(mouse);

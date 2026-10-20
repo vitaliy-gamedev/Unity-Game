@@ -1,13 +1,9 @@
+// Автоматичний рух кінематичного авто та прогрес кінцевого маршруту.
 using System;
 using UnityEngine;
 
 namespace Factura
 {
-    /// <summary>
-    /// Автоматичний рух авто вздовж прямої траси та повідомлення про прогрес/фініш.
-    /// Кінематичний Rigidbody рухається у FixedUpdate, а колеса — лише візуально в LateUpdate.
-    /// WheelCollider не потрібен: у цьому прототипі немає симуляції підвіски чи ручного водіння.
-    /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     public sealed class CarController : MonoBehaviour
     {
@@ -28,20 +24,16 @@ namespace Factura
 
         private void Awake()
         {
-            // Кешуємо компонент і початкові пози/оберти один раз, а не шукаємо при кожному рестарті.
             body = GetComponent<Rigidbody>();
             startPosition = body.position;
             initialWheelRotations = new Quaternion[wheels.Length];
             for (int i = 0; i < wheels.Length; i++) initialWheelRotations[i] = wheels[i].localRotation;
         }
 
-        // Повторний дозвіл руху після фінішу не запускає авто до явного ResetToStart.
         public void SetRunning(bool value) => isRunning = value && !hasReachedFinish;
 
         public void ResetToStart()
         {
-            // Рестарт — миттєва телепортація, тому тут задаємо позицію напряму,
-            // а не MovePosition, призначений нижче для звичайного фізичного кроку.
             isRunning = false;
             hasReachedFinish = false;
             body.position = startPosition;
@@ -55,8 +47,6 @@ namespace Factura
         private void FixedUpdate()
         {
             if (!isRunning) return;
-            // Шлях обмежений routeLength: авто не проїжджає за фініш на зайвий крок.
-            // fixedDeltaTime задає метри за фізичний крок, а не за довільний кадр рендеру.
             float distance = Mathf.Min(routeLength, body.position.z - startPosition.z + speed * Time.fixedDeltaTime);
             body.MovePosition(startPosition + Vector3.forward * distance);
             Progress = distance / routeLength;
@@ -69,8 +59,6 @@ namespace Factura
 
         private void LateUpdate()
         {
-            // Оберт залежить від фактичного видимого переміщення, а не просто часу:
-            // коли авто зупинено, колеса теж стоять. s / r дає кут у радіанах.
             float distance = transform.position.z - startPosition.z;
             float degrees = (distance - visualDistance) / wheelRadius * Mathf.Rad2Deg;
             visualDistance = distance;

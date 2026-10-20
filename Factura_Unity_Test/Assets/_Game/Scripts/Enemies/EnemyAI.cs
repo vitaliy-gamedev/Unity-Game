@@ -1,18 +1,12 @@
+// Пряме переслідування автомобіля на відкритій трасі без пошуку шляху навколо перешкод.
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace Factura
 {
-    // Невеликий автомат станів зрозуміліший за набір незалежних прапорців поведінки.
     public enum EnemyState { Idle, Chase, Attack, Dead }
 
-    /// <summary>
-    /// Проста поведінка зомбі на відкритій прямій трасі: виявити авто, наздогнати та бити.
-    /// Рух і дальність атаки визначаються відносно колайдера машини, а не лише її центра.
-    /// NavMesh тут не потрібен, бо немає складної навігації навколо перешкод;
-    /// якщо така геометрія з'явиться, пряме переслідування доведеться замінити.
-    /// </summary>
     [RequireComponent(typeof(Rigidbody), typeof(Health), typeof(CapsuleCollider))]
     public sealed class EnemyAI : MonoBehaviour
     {
@@ -44,7 +38,6 @@ namespace Factura
 
         private void Awake()
         {
-            // RequireComponent фіксує необхідний склад префаба; компоненти кешуємо один раз.
             body = GetComponent<Rigidbody>();
             health = GetComponent<Health>();
             hitbox = GetComponent<CapsuleCollider>();
@@ -52,7 +45,6 @@ namespace Factura
 
         private void OnEnable()
         {
-            // Підписки живуть стільки ж, скільки активний компонент; OnDisable їх знімає.
             health.Died += Die;
             health.Damaged += OnDamaged;
         }
@@ -65,8 +57,6 @@ namespace Factura
 
         public void Initialize(Collider target, Health targetHealth, IReadOnlyList<EnemyAI> otherEnemies)
         {
-            // Динамічні вороги отримують конкретну ціль від Spawner, а не шукають авто
-            // за тегом чи через глобальний Singleton. Список сусідів використовується лише для читання.
             carCollider = target;
             carHealth = targetHealth;
             neighbours = otherEnemies;
@@ -74,12 +64,11 @@ namespace Factura
             attackTimer = attackWindup;
         }
 
+        // Дозвіл бою незалежний від стану AI: після Win/Lose припиняються переслідування й атаки.
         public void SetCombatActive(bool value) => combatActive = value;
 
         private void OnDamaged(DamageHit hit)
         {
-            // Коротко перериваємо рух/атаку й штовхаємо в площині дороги.
-            // Це керований відгук кінематичного тіла, а не фізична симуляція AddForce.
             staggerTime = 0.1f;
             pushDirection = hit.Direction;
             pushDirection.y = 0;
@@ -99,22 +88,18 @@ namespace Factura
             toCar.y = 0;
             if (State == EnemyState.Idle)
             {
-                // Порівняння квадратів відстаней не потребує квадратного кореня.
-                // Після виявлення ворог продовжує переслідування, навіть якщо авто віддалилось.
                 if (toCar.sqrMagnitude > detectionRadius * detectionRadius) return;
                 State = EnemyState.Chase;
             }
 
-            // ClosestPoint дає найближчу поверхню великого авто. Дистанція лише
-            // до його центра змушувала б зомбі заходити всередину моделі заради атаки.
             Vector3 probe = body.position;
             probe.y = carCollider.bounds.center.y;
+            // Дистанція до поверхні кузова, не його центра, не змушує ворога заходити всередину авто.
             Vector3 closest = carCollider.ClosestPoint(probe);
             closest.y = body.position.y;
             Vector3 toSurface = closest - body.position;
             float distance = toSurface.magnitude;
-            // Якщо рухоме авто вже накрило ворога, виводимо його за найближчий
-            // бік bounds. Так ворог не залишається всередині машини без можливості влучити в нього.
+            // Якщо рухома машина накрила ворога, виводимо його до найближчого борту.
             if (distance < 0.01f)
             {
                 var bounds = carCollider.bounds;
@@ -132,14 +117,12 @@ namespace Factura
             if (toCar.sqrMagnitude > 0.01f)
                 body.MoveRotation(Quaternion.RotateTowards(body.rotation, Quaternion.LookRotation(toCar), 540 * Time.fixedDeltaTime));
 
-            // Невеликий запас при вже активній атаці прибирає тремтіння Chase/Attack на межі дальності.
+            // Гістерезис прибирає перемикання Chase/Attack на межі дальності.
             float range = State == EnemyState.Attack ? attackDistance + 0.15f : attackDistance;
             if (distance > range)
             {
                 State = EnemyState.Chase;
                 attackTimer = attackWindup;
-                // Рух до поверхні доповнюємо розведенням сусідів, але обмежуємо
-                // загальну швидкість і довжину кроку, щоб не перестрибнути точку зупинки.
                 Vector3 movement = toSurface.normalized * speed + Separation() * 2;
                 movement = Vector3.ClampMagnitude(movement, speed) * Time.fixedDeltaTime;
                 movement = Vector3.ClampMagnitude(movement, distance - attackDistance * 0.9f);
@@ -148,13 +131,10 @@ namespace Factura
             }
 
             State = EnemyState.Attack;
-            // Маленька корекція дозволяє зберігати дистанцію до авто, яке продовжує їхати.
             float correction = Mathf.Clamp(distance - attackDistance * 0.9f, -speed * Time.fixedDeltaTime, speed * Time.fixedDeltaTime);
             body.MovePosition(body.position + toSurface / distance * correction);
             attackTimer -= Time.fixedDeltaTime;
             if (attackTimer > 0) return;
-            // Перший удар має підготовку attackWindup, наступні — інтервал attackInterval.
-            // Подія Attacked синхронізує видимий удар зі справжнім завданням шкоди.
             attackTimer += attackInterval;
             carHealth.ApplyDamage(damage, closest + Vector3.up * 0.8f, toCar);
             Attacked?.Invoke();
@@ -162,8 +142,6 @@ namespace Factura
 
         private Vector3 Separation()
         {
-            // Локальне розведення не замінює пошук шляху. Для невеликої групи
-            // простого перебору достатньо; при великих натовпах потрібен просторовий індекс.
             Vector3 steering = Vector3.zero;
             if (neighbours == null) return steering;
             for (int index = 0; index < neighbours.Count; index++)
@@ -180,10 +158,9 @@ namespace Factura
 
         private void Die()
         {
-            // Вимикаємо бойову поведінку й хітбокс негайно, але не знищуємо модель:
-            // EnemyFeedback ще має показати падіння та поступове зникнення.
             State = EnemyState.Dead;
             combatActive = false;
+            // Шкоду й хітбокс вимикаємо відразу; візуальна модель лишається для анімації смерті.
             hitbox.enabled = false;
         }
     }

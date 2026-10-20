@@ -29,7 +29,3 @@ Thumbs.db
 __MACOSX/
 __MACOSX.meta
 ._*
-
-# Local interview preparation must stay outside the public repository.
-**/*Interview_Cheat_Sheet*
-**/*Development_Log*

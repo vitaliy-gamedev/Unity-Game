@@ -1,13 +1,8 @@
+// Процедурні пози під конкретний ріг моделі. Візуальна анімація не визначає бойову шкоду.
 using UnityEngine;
 
 namespace Factura
 {
-    /// <summary>
-    /// Процедурна анімація кісток наданої моделі: очікування, біг, підготовка/удар і здригання.
-    /// Для невеликого тестового обрані математичні пози без Animator Controller та набору кліпів.
-    /// Це компактне рішення під конкретний скелет, не універсальна система для будь-якої моделі.
-    /// При розширенні набору рухів варто перейти на авторські кліпи та їх змішування.
-    /// </summary>
     [RequireComponent(typeof(EnemyAI), typeof(Health))]
     public sealed class EnemyAnimation : MonoBehaviour
     {
@@ -43,13 +38,11 @@ namespace Factura
             health = GetComponent<Health>();
             hipRest = hips.localPosition;
             previousPosition = transform.position;
-            // Початкова фаза залежить від місця спавну: натовп не крокує синхронно.
             cycle = Mathf.Repeat(transform.position.x * 0.73f + transform.position.z * 0.31f, 1) * Mathf.PI * 2;
         }
 
         private void OnEnable()
         {
-            // Удар і реакція синхронізовані з бойовими подіями, а не вгадуються за таймером AI.
             enemy.Attacked += OnStrike;
             health.Damaged += OnHit;
             previousPosition = transform.position;
@@ -72,8 +65,6 @@ namespace Factura
             previousPosition = transform.position;
             bool running = enemy.IsCombatActive && enemy.IsAlive && enemy.State == EnemyState.Chase;
             float speed = running ? travel.magnitude / Mathf.Max(Time.deltaTime, 0.001f) : 0;
-            // Вимірюємо реальний рух, а не лише стан Chase: ноги не повинні
-            // активно бігти, коли ворог уже майже зупинився біля борту авто.
             movement = Mathf.MoveTowards(movement, Mathf.Clamp01(speed / 5.5f), Time.deltaTime * 8);
             cycle += Mathf.Min(speed, 6) * Time.deltaTime / strideLength * Mathf.PI * 2;
             strikeTime = Mathf.Max(0, strikeTime - Time.deltaTime);
@@ -85,8 +76,6 @@ namespace Factura
 
         private void Pose(float phase, float run, float windup, float strike, float time, float hit)
         {
-            // Синус і косинус формують цикл; run плавно змішує спокійну позу з бігом.
-            // Змінюємо локальні кістки, а не корінь Rigidbody/бойовий колайдер.
             float wave = Mathf.Sin(phase);
             float breathing = Mathf.Sin(time * 2.5f) * (1 - run);
             hips.localPosition = hipRest + Vector3.up * (Mathf.Abs(Mathf.Cos(phase)) * 0.025f * run + breathing * 0.004f);
@@ -102,7 +91,6 @@ namespace Factura
             float elbow = 12 + 53 * run;
             if (windup > 0)
             {
-                // Підготовка видима до фактичного удару, щоб атака не була миттєвою й нечитабельною.
                 float preparation = Mathf.SmoothStep(0, 1, windup);
                 leftSwing = Mathf.Lerp(-15, -135, preparation);
                 rightSwing = leftSwing;
@@ -111,7 +99,6 @@ namespace Factura
             }
             if (strike > 0)
             {
-                // Короткий винос рук у момент шкоди та плавне повернення після нього.
                 float recovery = Mathf.Clamp01((0.26f - strike - 0.07f) / 0.19f);
                 leftSwing = Mathf.Lerp(-85, -15, Mathf.SmoothStep(0, 1, recovery));
                 rightSwing = leftSwing;
@@ -126,8 +113,6 @@ namespace Factura
 
         private static void Leg(Transform thigh, Transform shin, Transform foot, float wave, float lift, float run)
         {
-            // Дві ноги отримують протилежні фази. Згин коліна й компенсація стопи
-            // додають підйом кроку замість простого маятника прямою ногою.
             float upper = -wave * 38 * run;
             float lower = Mathf.Max(0, -lift) * 65 * run;
             thigh.localRotation = Quaternion.Euler(upper, 0, 0);
@@ -136,8 +121,6 @@ namespace Factura
         }
 
 #if UNITY_EDITOR
-        // Лише для окремого перегляду поз у редакторі; у збірку цей метод не входить.
-        // UNITY_EDITOR не дає допоміжному перегляду стати залежністю гри.
         public void PreviewPose(float phase, float run, float windup, float strike)
         {
             hipRest = new Vector3(0, 0.69f, -0.03f);

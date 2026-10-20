@@ -1,3 +1,4 @@
+// Перевірка складання DI, пакетної підготовки та скасування lifetime в окремому Editor-процесі.
 using System;
 using System.IO;
 using System.Text;
@@ -9,12 +10,6 @@ using VContainer;
 
 namespace Factura.Editor
 {
-    /// <summary>
-    /// Перевіряє інтеграцію VContainer і покадрової асинхронної підготовки.
-    /// Важливі не лише правильні типи, а й ті самі екземпляри сцени, блокування вводу,
-    /// розмір пачки спавну та скасування незавершеного рестарту при звільненні scope.
-    /// Запускається явно в окремому Editor-процесі та завершує його після звіту.
-    /// </summary>
     [InitializeOnLoad]
     public static class DependencyAsyncCheck
     {
@@ -36,14 +31,11 @@ namespace Factura.Editor
 
         static DependencyAsyncCheck()
         {
-            // Вхід у Play Mode може перезавантажити статичні поля; прапорець SessionState
-            // відновлює тільки явно замовлений сценарій, не запускає тести при звичайній грі.
             if (SessionState.GetBool(Key, false)) EditorApplication.update += Tick;
         }
 
         public static void Run()
         {
-            // Сценарій працює зі справжнім composition root Gameplay, не з підробленим контейнером.
             EditorSceneManager.OpenScene("Assets/_Game/Scenes/Gameplay.unity", OpenSceneMode.Single);
             SessionState.SetBool(Key, true);
             EditorApplication.update += Tick;
@@ -55,7 +47,6 @@ namespace Factura.Editor
             if (!Application.isPlaying) return;
             Application.runInBackground = true;
             EditorApplication.QueuePlayerLoopUpdate();
-            // Один крок сценарію на ігровий кадр, навіть якщо Editor.update викликається частіше.
             if (lastFrame == Time.frameCount) return;
             lastFrame = Time.frameCount;
             try
@@ -65,8 +56,6 @@ namespace Factura.Editor
                 double elapsed = EditorApplication.timeSinceStartup - phaseTime;
                 if (phase == 0)
                 {
-                    // Спершу чекаємо завершення реального async-старту і звіряємо
-                    // DI-ідентичність, тип координатора та наповнення сцени.
                     game = UnityEngine.Object.FindFirstObjectByType<GameManager>();
                     if (!game || game.IsPreparing) return;
                     scope = UnityEngine.Object.FindFirstObjectByType<GameLifetimeScope>();
@@ -88,8 +77,6 @@ namespace Factura.Editor
                 }
                 else if (phase == 1 && game.State == GameState.Lose && elapsed > .75)
                 {
-                    // Після натискання рестарту має існувати лише перша пачка з чотирьох
-                    // ворогів; багато натискань поспіль не повинні обійти блокування.
                     game.HandlePress();
                     Check(game.IsPreparing && spawner.IsPreparing && spawner.Enemies.Count == 4,
                         "Restart yields after the first four enemies instead of building the whole level in one frame.");
@@ -105,8 +92,6 @@ namespace Factura.Editor
                 }
                 else if (phase == 2)
                 {
-                    // Вимірюємо приріст кількості ворогів між кадрами, а не віримо
-                    // лише слову async у назві методу. Потім перевіряємо повний reset.
                     int newEnemies = spawner.Enemies.Count - previousCount;
                     if (newEnemies > 4 * (Time.frameCount - previousFrame))
                         throw new InvalidOperationException("Spawn batch exceeded four enemies per frame.");
@@ -126,8 +111,6 @@ namespace Factura.Editor
                 }
                 else if (phase == 3 && game.State == GameState.Lose && elapsed > .75)
                 {
-                    // Навмисно звільняємо scope посеред підготовки: найважливіший
-                    // крайовий випадок для токена життєвого циклу сцени.
                     game.HandlePress();
                     Check(game.IsPreparing && spawner.Enemies.Count == 4, "A second real restart is pending when the scope is disposed.");
                     scope.DisposeCore();
@@ -135,8 +118,6 @@ namespace Factura.Editor
                 }
                 else if (phase == 4 && elapsed > .15)
                 {
-                    // Скасування має прибрати часткових ворогів і не опублікувати
-                    // запізнілий EnterReady після завершення життєвого циклу координатора.
                     Check(scope.Container == null && !spawner.IsPreparing && spawner.Enemies.Count == 0,
                         "Disposing the DI scope cancels its pending Awaitable and removes partial enemies.");
                     Check(game.IsPreparing && car.Progress == 0,
@@ -147,17 +128,14 @@ namespace Factura.Editor
             catch (Exception error) { Report.AppendLine("FAIL: " + error); Finish(1); }
         }
 
-        // Відлік Editor-time дає сценарію власний timeout незалежно від ігрового timeScale.
         private static void Next() { phase++; phaseTime = EditorApplication.timeSinceStartup; }
         private static void Check(bool condition, string message)
         {
-            // При першому порушенні зупиняємо ланцюжок: наступні фази вже не мали б надійної основи.
             if (!condition) throw new InvalidOperationException(message);
             Report.AppendLine("PASS: " + message);
         }
         private static void Finish(int code)
         {
-            // Прибираємо callback і прапорець до виходу, щоб перевірка не повторилась сама.
             SessionState.SetBool(Key, false);
             EditorApplication.update -= Tick;
             File.WriteAllText("Library/FacturaDependencyAsyncCheck.txt", Report.ToString());

@@ -1,3 +1,4 @@
+// Явна Editor-перевірка ближніх влучань. Run запускає окремий процес Unity; Finish завершує його.
 using System;
 using System.IO;
 using System.Text;
@@ -7,19 +8,11 @@ using UnityEngine;
 
 namespace Factura.Editor
 {
-    /// <summary>
-    /// Регресійна перевірка стрільби впритул з різних боків машини.
-    /// Відтворює колишню проблему: ціль біля борту або всередині довжини ствола не отримувала шкоди.
-    /// Це допоміжний сценарій лише для Editor, а не бойова логіка чи автоприцілювання гравця.
-    /// Запускати через Run в окремому процесі Unity: Finish закриває цей процес з кодом результату.
-    /// </summary>
     [InitializeOnLoad]
     public static class CloseRangeCheck
     {
         private const string Key = "Factura.CloseRangeCheck.Running";
         private static readonly StringBuilder Report = new();
-        // Матриця позицій покриває чотири боки, кути, ствол і рухомі сценарії.
-        // Повторені позиції мають різне наведення/рух, а не дублюють один тест.
         private static readonly Vector3[] Positions =
         {
             new(1.65f, 0, 0), new(-1.65f, 0, 0), new(0, 0, 2.8f), new(0, 0, -2.8f),
@@ -46,13 +39,10 @@ namespace Factura.Editor
         private static float commandedYaw;
         private static double deadline;
 
-        // SessionState зберігає намір перевірки через перезавантаження домену при вході в Play Mode.
-        // Сам атрибут InitializeOnLoad нічого не тестує без попереднього явного запуску Run.
         static CloseRangeCheck() { if (SessionState.GetBool(Key, false)) EditorApplication.update += Tick; }
 
         public static void Run()
         {
-            // Відкриваємо контрольовану сцену, а не використовуємо випадкову поточну сцену редактора.
             EditorSceneManager.OpenScene("Assets/_Game/Scenes/Gameplay.unity", OpenSceneMode.Single);
             SessionState.SetBool(Key, true);
             EditorApplication.update -= Tick;
@@ -66,7 +56,6 @@ namespace Factura.Editor
             Application.runInBackground = true;
             Time.captureDeltaTime = 1f / 60;
             EditorApplication.QueuePlayerLoopUpdate();
-            // Editor.update може викликатись частіше ігрового кадру; не рахуємо один кадр двічі.
             if (lastFrame == Time.frameCount) return;
             lastFrame = Time.frameCount;
             try
@@ -90,8 +79,6 @@ namespace Factura.Editor
                 }
                 Aim();
                 float elapsed = Time.time - started;
-                // Негативний випадок перевіряє, що допоміжний нахил не перетворив
-                // явний горизонтальний промах на приховане автонаведення.
                 bool expectedMiss = index == 12;
                 if ((!expectedMiss && !victim.IsAlive) || elapsed > 1.7f)
                 {
@@ -108,8 +95,6 @@ namespace Factura.Editor
 
         private static void StartCase()
         {
-            // Кожен випадок має чисті HP, пул і ворогів; решту цілей вимикаємо,
-            // а бочку відсуваємо, щоб перевіряти саме одне близьке попадання.
             turret.SetActive(false);
             pool.ClearActive();
             car.ResetToStart();
@@ -120,7 +105,6 @@ namespace Factura.Editor
             victim = spawner.Enemies[0];
             victim.gameObject.SetActive(true);
             victim.GetComponent<Rigidbody>().position = victim.transform.position = Positions[index];
-            // Після прямої зміни Transform фізичний запит має бачити нове положення вже зараз.
             Physics.SyncTransforms();
             turret.ResetAim();
             commandedYaw = 0;
@@ -136,8 +120,6 @@ namespace Factura.Editor
 
         private static void Aim()
         {
-            // Тест розраховує команду наведення, але шкода все одно проходить
-            // через реальну турель і Projectile. Health напряму для успіху тесту не змінюємо.
             Vector3 point = car.transform.InverseTransformDirection(victim.AimPoint - turret.transform.position);
             float desired = Mathf.Atan2(point.x, point.z) * Mathf.Rad2Deg;
             if (index == 8 || index == 9) desired += 14;
@@ -149,8 +131,6 @@ namespace Factura.Editor
 
         private static void Finish(int code)
         {
-            // Звіт і тимчасові артефакти залишаються в Library, не серед ресурсів гри.
-            // 0 означає успіх; інший код дозволяє зовнішньому запуску помітити збій.
             SessionState.SetBool(Key, false);
             EditorApplication.update -= Tick;
             Time.captureDeltaTime = 0;
