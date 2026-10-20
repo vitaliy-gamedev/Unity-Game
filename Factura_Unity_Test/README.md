@@ -1,51 +1,87 @@
 # Factura Unity Test — Turret Run
 
-A compact car-mounted turret prototype implementing the supplied Unity developer test.
+Невеликий прототип автомобіля з туреллю за тестовим завданням Unity-розробника.
+У власних C#-скриптах є українські пояснення відповідальності класів, причин вибору рішень і важливих крайових випадків.
+Назви класів, Unity API та ігрові написи не перекладені: це ті самі ідентифікатори й інтерфейс робочого прототипу.
 
-## Run
+## Матеріали для перевірки
 
-1. Open **this folder** (`Factura_Unity_Test`) in Unity **6000.3.6f1**, not the repository root.
-2. Allow Package Manager to restore dependencies. VContainer 1.19.0 is pinned through the scoped OpenUPM registry.
-3. Open `Assets/_Game/Scenes/Gameplay.unity` and enter Play Mode.
+[Відео FactureVideoTest.mp4 та архів вихідного коду тестового](https://github.com/vitaliy-gamedev/Unity-Game/releases/tag/factura-unity-test-2026-10-20).
+У матеріалах використано саме запис, обраний автором для передачі. Окремий архів містить лише `Factura_Unity_Test`, без інших проєктів цього репозиторію.
+Дати роботи над тестовим: **17–20 жовтня 2026 року**.
+Особиста шпаргалка й журнал розробки до публічних матеріалів не включені.
 
-Choose **Play** or tap the road to start. The car drives automatically and the turret fires automatically.
-Point the mouse to aim through 360 degrees; on touch devices, hold and swipe horizontally to rotate the turret.
-Enemies begin idle, chase the approaching car and deal melee damage. Reach the finish with HP remaining to win.
-After a result, one tap resets to Ready; a separate tap starts the next run.
-The menu includes a sound toggle and Exit. Exit stops Play Mode in the editor and closes the application in a player.
+## Запуск і керування
 
-## Implementation
+1. Відкрити **саме папку `Factura_Unity_Test`** в Unity **6000.3.6f1**, а не корінь спільного Git-репозиторію.
+2. Дочекатися відновлення залежностей через Package Manager. VContainer 1.19.0 зафіксований у scoped-реєстрі OpenUPM.
+3. Відкрити `Assets/_Game/Scenes/Gameplay.unity` та ввімкнути Play Mode.
 
-- `GameLifetimeScope` is the scene composition root. VContainer registers the existing scene components and constructs one `GameBootstrap` entry point.
-- `GameBootstrap` is plain C# with constructor injection. It implements VContainer's `IAsyncStartable` and `IDisposable`, coordinates a run and pairs event subscriptions with unsubscription.
-- `GameManager` owns Ready / Playing / Win / Lose. Preparation gates input without adding a separate gameplay state; fatal damage takes priority over a simultaneous finish.
-- `Spawner.PrepareAsync` uses Unity's built-in `Awaitable.NextFrameAsync` to instantiate at most four enemies per frame. It runs on the main thread, not a background worker. A linked cancellation token follows the DI scope lifetime; cancellation removes partial enemies. The synchronous `Prepare` path shares the same population logic for deterministic editor fixtures.
-- `CarController` moves its kinematic Rigidbody in `FixedUpdate`. `TurretController` handles smooth aim and firing; `InputReader` separates pointer/touch input and prevents menu clicks from starting a run.
-- `Health` publishes damage/death events. `EnemyAI` handles detection, chase and melee; separate animation/feedback components present those events.
-- `ProjectilePool` reuses bullets, and swept collision checks cover normal flight and point-blank barrel clearance. Impact effects and sound voices are also bounded and reused.
-- `GameUI` and `GameAudio` present state and combat feedback. Scene/prefab-local references remain serialized in the inspector.
+Натиснути **Play** або торкнутися дороги. Автомобіль їде, а турель стріляє автоматично.
+На ПК курсор задає напрям наведення на 360° без утримання кнопки миші.
+Для сенсорного вводу потрібно утримувати палець і рухати його горизонтально, обертаючи турель.
 
-Optional additions include a destructible explosive barrel, enemy hit/death animation, muzzle flash and recoil, car damage feedback, a compact HUD, music and synthesized sound effects.
+Вороги спочатку очікують, а при наближенні авто починають переслідування й завдають шкоди зблизька.
+Для перемоги потрібно доїхати до фінішу з HP вище нуля; втрата всього HP означає поразку.
+Після результату одне натискання повертає гру до Ready, а окреме наступне запускає новий заїзд.
+Кнопка Sound перемикає звук. Exit зупиняє Play Mode у редакторі або закриває готовий застосунок.
 
-## Verification
+## Архітектура та причини рішень
 
-Opt-in Play Mode checks live in `Assets/_Game/Editor`. Save and close the editor before invoking them from a separate Unity process; each check exits that process itself:
+- `GameLifetimeScope` — точка складання залежностей сцени у VContainer. Реєструє вже налаштовані компоненти й одну точку входу `GameBootstrap`, не створюючи дублікати об'єктів сцени.
+- `GameBootstrap` — звичайний C#-клас із залежностями через конструктор. Реалізує `IAsyncStartable` та `IDisposable`, зв'язує системи подіями, готує заїзд і симетрично знімає підписки. Власного MonoBehaviour-bootstrap або глобального Singleton тут немає.
+- `GameManager` зберігає Ready / Playing / Win / Lose. Він визначає стан, а не керує деталями руху чи ефектів. Підготовка тимчасово блокує ввід; якщо фініш і смертельна шкода сталися в одному кадрі, поразка має пріоритет.
+- `Spawner.PrepareAsync` використовує вбудований `Awaitable.NextFrameAsync` для створення до чотирьох ворогів між кадрами. Unity API залишається на головному потоці, без `Task.Run`. Пов'язаний токен прив'язаний до життєвого циклу DI scope; скасування прибирає частково створених ворогів. Синхронний `Prepare` використовує той самий генератор розстановки для контрольованих Editor-перевірок.
+- `CarController` рухає кінематичний Rigidbody у `FixedUpdate`, а візуально обертає колеса в `LateUpdate`. Для прямої автоматичної їзди без підвіски достатньо цього рішення без WheelCollider.
+- `InputReader` відділяє пристрої вводу від турелі: абсолютна точка курсора для ПК, відносний жест для touch. Клік по кнопці меню не передається як команда запуску заїзду.
+- `TurretController` згладжує кут і керує темпом автострільби. Допоміжний нахил униз враховує ціль у вже обраному гравцем напрямку; це не автоматичний горизонтальний вибір ворога та не самонаведення кулі.
+- `Health` повторно використовується авто, ворогом і бочкою та публікує події зміни HP, попадання й смерті. `EnemyAI` відповідає за виявлення, переслідування, дистанцію до поверхні авто та ближню атаку. Окремі компоненти анімації й відгуку показують ці події, не підміняючи правила завдання шкоди.
+- `ProjectilePool` повторно використовує кулі. `Projectile` перевіряє весь відрізок польоту через `SphereCast`, початкове перекриття та ділянку ствола до дула: близький ворог не має ставати невразливим через точку появи снаряда. Межа збережених об'єктів пулу не є жорстким лімітом активних куль.
+- `CombatEffects` і `GameAudio` повторно використовують обмежений набір ефектів/звукових голосів. Для однієї сцени не вводився окремий глобальний сервіс завантаження аудіо чи ефектів.
+- `GameUI` показує стан, HP, прогрес і вбивства. Локальні посилання моделей та префабів залишаються серіалізованими в Inspector: контейнер не потрібен для кожної внутрішньої деталі об'єкта.
+- Камера налаштована через Cinemachine. Для реакції на пошкодження використовується імпульс Cinemachine, а після рестарту скидається історія стеження, щоб камера не поверталася плавно від фінішу до старту.
+
+Додатково до базового циклу реалізовані вибухова бочка, процедурні рухи ворогів, реакція на попадання й падіння після смерті, спалах і віддача турелі, ефекти пошкодження авто, компактний HUD, музика та синтезовані звукові ефекти.
+
+## Порядок читання коду
+
+1. `Core/GameLifetimeScope.cs` → `Core/GameBootstrap.cs` → `Core/GameManager.cs`: складання залежностей, запуск, події та стани.
+2. `Input/InputReader.cs` → `Car/CarController.cs` → `Combat/TurretController.cs`: ввід, рух і наведення.
+3. `Combat/ProjectilePool.cs` → `Combat/Projectile.cs` → `Combat/Health.cs`: повторне використання куль, влучання та HP.
+4. `Enemies/Spawner.cs` → `Enemies/EnemyAI.cs`: асинхронна підготовка, розстановка, переслідування та атака.
+5. Решта `Combat`, `Car`, `Enemies` і `UI`: анімація, ефекти, звук та представлення даних.
+
+Ці шляхи відносні до `Assets/_Game/Scripts`. У кожному власному скрипті є вступне пояснення й коментарі біля нетривіальних рішень. Коментарі також позначають обмеження прототипу: пряме переслідування без пошуку шляху, фіксовані NonAlloc-буфери та процедурні пози під конкретний скелет.
+
+## Допоміжні перевірки
+
+Перевірки Play Mode знаходяться в `Assets/_Game/Editor` і запускаються **лише явно**. Вони не входять до гри.
+Перед запуском з окремого процесу Unity потрібно зберегти сцену та закрити редактор цього проєкту.
+Кожна перевірка сама закриває свій процес після завершення, тому не слід запускати її в робочій сесії з незбереженими змінами.
 
 ```text
 Unity.exe -batchmode -projectPath "<Factura_Unity_Test>" -executeMethod Factura.Editor.DependencyAsyncCheck.Run -logFile "<check.log>"
 ```
 
-Other entry points are `CombatPlayCheck.Run`, `CompactMenuCheck.Run`, `CloseRangeCheck.Run` and `NaturalRunCheck.Run` in the same `Factura.Editor` namespace.
-Reports are written under `Library` and are not committed. They cover DI identity/disposal, async preparation/cancellation, real pointer/touch input, firing, near hits, damage, results, restarts and pooling.
-These are automated editor checks, not a substitute for a manual device playtest or a performance profile.
+- `DependencyAsyncCheck.Run` — екземпляри DI, життєвий цикл координатора, розподіл спавну між кадрами та скасування підготовки.
+- `CombatPlayCheck.Run` — інтеграція вводу, бою, анімації, звуку, результатів і рестартів.
+- `CompactMenuCheck.Run` — справжні input-події для кнопок меню без випадкового запуску гри.
+- `CloseRangeCheck.Run` — влучання біля бортів, кутів, позаду авто й у межах довжини ствола, а також явний промах.
+- `NaturalRunCheck.Run` — повні заїзди з фіксованими seed, перемогою/поразкою та контролем повторного використання куль.
 
-`NaturalRunCheck.RecordPreview` optionally records an editor gameplay demo with scripted input and the actual Unity audio mix. It requires the `FACTURA_FFMPEG` environment variable pointing to a local FFmpeg executable; FFmpeg is not a game dependency.
+Усі точки входу належать простору імен `Factura.Editor`. Звіти записуються в `Library` і не комітяться.
+Це автоматизовані перевірки редактора, не заміна ручному плейтесту або профілюванню на цільовому пристрої.
 
-## Dependencies and credits
+Опціональний `NaturalRunCheck.RecordPreview` записує огляд з програмним керуванням і реальним аудіоміксом Unity.
+Потрібна змінна середовища `FACTURA_FFMPEG` зі шляхом до локального FFmpeg. Для запуску самої гри FFmpeg не потрібен.
+Такий запис має позначку програмного керування та не видається за ручний плейтест.
 
-- Unity URP, Input System, uGUI and Cinemachine: versions are pinned in `Packages`.
-- [VContainer 1.19.0](https://github.com/hadashiA/VContainer): MIT license, restored by Package Manager.
-- Original test models/textures are retained in `Assets/_Game/Art/Source`.
-- Music attribution and sound provenance are in `Assets/_Game/Audio/ThirdPartyNotices.txt`.
+## Залежності та авторство ресурсів
 
-`Docs/Word` contains the implementation plan, GDD, system map and TDD, updated to match the implemented prototype and DI/async lifecycle. Personal interview notes and development logs remain outside the repository.
+- Unity URP, Input System, uGUI та Cinemachine: версії зафіксовані в `Packages`.
+- [VContainer 1.19.0](https://github.com/hadashiA/VContainer): ліцензія MIT, пакет відновлюється через Package Manager.
+- Оригінальні моделі й текстури тестового збережені в `Assets/_Game/Art/Source`.
+- Відомості про музику та походження звукових ефектів: `Assets/_Game/Audio/ThirdPartyNotices.txt`.
+
+У `Docs/Word` знаходяться план реалізації, GDD, схема систем і TDD з описом DI/async-життєвого циклу прототипу.
+Особисті нотатки для співбесіди та журнал розробки зберігаються окремо від репозиторію.

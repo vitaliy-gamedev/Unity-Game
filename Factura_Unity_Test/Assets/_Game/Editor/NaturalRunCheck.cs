@@ -9,7 +9,13 @@ using UnityEngine.UI;
 
 namespace Factura.Editor
 {
-    // Opt-in autoplay using the same public start/aim commands as input. Never changes saved balance/route.
+    /// <summary>
+    /// Автоматизований повний проїзд траси з перевіркою результатів і повторних заїздів.
+    /// Має два явні режими: Run для перевірок та RecordPreview для локального відеоогляду.
+    /// Наведення в цьому сценарії програмне: це НЕ автопілот і не механіка, доступна гравцю.
+    /// Допоміжний код лежить у Editor і не входить у гру; FFmpeg потрібен лише для запису.
+    /// Finish завершує процес Unity, тому запускати слід в окремому процесі редактора.
+    /// </summary>
     [InitializeOnLoad]
     public static class NaturalRunCheck
     {
@@ -51,14 +57,17 @@ namespace Factura.Editor
 
         static NaturalRunCheck()
         {
+            // SessionState переносить прапорці через вхід у Play Mode/перезавантаження домену.
             if (SessionState.GetBool(Key, false)) EditorApplication.update += Tick;
         }
 
+        // Жоден режим не запускається сам при відкритті сцени або імпорті цього скрипта.
         public static void Run() => Begin(false);
         public static void RecordPreview() => Begin(true);
 
         private static void Begin(bool video)
         {
+            // Сцена й режим задаються до входу в Play Mode; зіграний стан не зберігаємо як сцену.
             EditorSceneManager.OpenScene("Assets/_Game/Scenes/Gameplay.unity", OpenSceneMode.Single);
             SessionState.SetBool(Key, true);
             SessionState.SetBool(VideoKey, video);
@@ -72,6 +81,8 @@ namespace Factura.Editor
             if (!Application.isPlaying) return;
             Application.runInBackground = true;
             recording = SessionState.GetBool(VideoKey, false);
+            // Фіксуємо крок часу для відтворюваного запису/сценарію.
+            // Це не вимірювання реального FPS чи продуктивності пристрою.
             Time.captureDeltaTime = 1f / (recording ? 30 : 60);
             EditorApplication.QueuePlayerLoopUpdate();
             if (lastFrame == Time.frameCount) return;
@@ -95,7 +106,6 @@ namespace Factura.Editor
                     pool.Impact += CountImpact;
                     if (recording) StartRecording();
                     Require(game.State == GameState.Ready && pool.ActiveCount == 0, "Ready has no active bullets.");
-                    // In Ready, shoot only these test projectiles away from the car/enemies into actual ground colliders.
                     pool.Fire(new Vector3(10, 2, 0), Vector3.down);
                     runStart = Time.time;
                     checkingGround = true;
@@ -103,6 +113,8 @@ namespace Factura.Editor
                 }
                 if (checkingGround)
                 {
+                    // Окремі негативні випадки: промах у землю та старт кулі всередині
+                    // землі теж повинні коректно повернути снаряд у пул.
                     if (Time.time - runStart < .15f) return;
                     Require(pool.ActiveCount == 0 && impacts == 1, "A missed projectile hits ground and returns to the pool.");
                     pool.Fire(new Vector3(10, -.1f, 0), Vector3.down);
@@ -122,6 +134,8 @@ namespace Factura.Editor
                     return;
                 }
                 maxBullets = Mathf.Max(maxBullets, pool.ActiveCount);
+                // Для цієї конфігурації вистачає прогрітих 24 куль. Тест виявляє
+                // зростання, але це не означає, що ObjectPool має жорсткий active-ліміт 24.
                 Require(pool.CreatedCount == 24, "Projectile pool grew beyond the prewarmed 24 objects.");
                 if (game.State == GameState.Playing)
                 {
@@ -139,6 +153,8 @@ namespace Factura.Editor
                 if (game.State != GameState.Win && game.State != GameState.Lose) return;
                 if (resultTime == 0)
                 {
+                    // Перший заїзд ігнорує ворогів і має програти; наступні наводяться
+                    // та мають дістатись фінішу. Після кожного перевіряємо очищення куль/лінії.
                     Require(!turret.IsActive && pool.ActiveCount == 0, "Results left shooting/projectiles active.");
                     Require(!turret.GetComponentInChildren<LineRenderer>().enabled,
                         "Aim guide remained visible after the run ended.");
@@ -168,6 +184,8 @@ namespace Factura.Editor
 
         private static void StartRun()
         {
+            // Фіксовані різні seed дають відтворювані варіанти розстановки.
+            // Зміни SerializedObject стосуються цього Play Mode, не записуються у сцену на диску.
             var settings = new SerializedObject(spawner);
             settings.FindProperty("useFixedSeed").boolValue = true;
             settings.FindProperty("seed").intValue = 41 + run;
@@ -188,6 +206,8 @@ namespace Factura.Editor
 
         private static void AimAtThreat()
         {
+            // Тільки тестовий агент: обирає близьку загрозу або бочку біля групи
+            // й надсилає команди Aim. Реальна гра залишає горизонтальний кут гравцю.
             if (barrelTarget && !spawner.Barrel.IsAlive) barrelTarget = false;
             if (!target || !target.IsAlive)
             {
@@ -223,6 +243,8 @@ namespace Factura.Editor
 
         private static void Capture(string path)
         {
+            // path == null означає відеокадр у вже виділені буфери;
+            // інший шлях — окремий PNG. Для відео не створюємо нову Texture2D щокадру.
             var camera = Camera.main;
             var canvas = GameObject.Find("Game UI").GetComponent<Canvas>();
             var scaler = canvas.GetComponent<CanvasScaler>();
@@ -257,6 +279,7 @@ namespace Factura.Editor
             }
             finally
             {
+                // Відновлюємо тимчасову конфігурацію рендеру навіть при збої запису.
                 camera.targetTexture = null;
                 canvas.renderMode = mode;
                 canvas.worldCamera = previousCamera;
@@ -272,12 +295,16 @@ namespace Factura.Editor
 
         private static void StartRecording()
         {
+            // Шлях до локального енкодера не зашито в проєкт і не потрібно встановлювати
+            // FFmpeg заради самої гри. Запис — окрема опція через FACTURA_FFMPEG.
             string ffmpeg = Environment.GetEnvironmentVariable("FACTURA_FFMPEG");
             Require(File.Exists(ffmpeg), "Set FACTURA_FFMPEG to a local ffmpeg executable for opt-in video recording.");
             videoTarget = RenderTexture.GetTemporary(640, 1136, 24);
             videoPixels = new Texture2D(640, 1136, TextureFormat.RGB24, false);
             videoBuffer = new byte[640 * 1136 * 3];
             string destination = Path.GetFullPath("Library/Factura_Autoplay_Review.mp4");
+            // Передаємо RGB-кадри в stdin без shell. MP4 є локальним вихідним
+            // артефактом; vflip виправляє орієнтацію ReadPixels для енкодера.
             encoder = new System.Diagnostics.Process
             {
                 StartInfo = new System.Diagnostics.ProcessStartInfo
@@ -291,6 +318,8 @@ namespace Factura.Editor
                 }
             };
             Require(encoder.Start(), "Could not start video encoder.");
+            // Звук беремо з реального Unity-міксу через offline AudioRenderer,
+            // а не накладаємо довільну музику замість ігрових ефектів.
             Require(AudioSettings.speakerMode == AudioSpeakerMode.Stereo, "Offline review recording expects stereo output.");
             audioSampleRate = AudioSettings.outputSampleRate;
             audioCapture = new FileStream("Library/Factura_ReviewAudio.f32", FileMode.Create, FileAccess.Write);
@@ -306,6 +335,7 @@ namespace Factura.Editor
             var text = label.GetComponent<Text>();
             text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             text.fontSize = 18;
+            // Позначка чесно відрізняє програмне керування у відео від ручного плейтесту.
             text.text = "UNITY EDITOR / SCRIPTED INPUT";
             text.color = new Color(1, 1, 1, .8f);
             text.raycastTarget = false;
@@ -313,6 +343,8 @@ namespace Factura.Editor
 
         private static void Finish(int code)
         {
+            // Зупиняємо захоплення та закриваємо stdin енкодера, щоб він завершив MP4.
+            // Перевіряємо тривалість реального звуку й відео та повертаємо код результату.
             SessionState.SetBool(Key, false);
             SessionState.SetBool(VideoKey, false);
             EditorApplication.update -= Tick;
@@ -345,6 +377,9 @@ namespace Factura.Editor
 
         private static void CaptureAudio()
         {
+            // Unity повідомляє кількість аудіосемплів для поточного capture-кадру.
+            // Два канали stereo записуємо як float32; тимчасовий NativeArray
+            // звільняється через using, керований byte-буфер повторно використовується.
             int frames = AudioRenderer.GetSampleCountForCaptureFrame();
             using var samples = new NativeArray<float>(frames * 2, Allocator.Temp);
             Require(AudioRenderer.Render(samples), "Unity offline audio rendering failed.");

@@ -10,7 +10,13 @@ using UnityEngine.UI;
 
 namespace Factura.Editor
 {
-    // Opt-in, bounded integration check. Runs only through the explicit CLI/menu entry point.
+    /// <summary>
+    /// Послідовна інтеграційна перевірка бою, вводу, ефектів, перемоги/поразки та рестарту.
+    /// Використовує справжні кулі й компоненти сцени, але контрольовано розставляє
+    /// учасників і задає частину пошкоджень для окремих умов сценарію.
+    /// Це не ручний плейтест і не вимірювання продуктивності мобільного пристрою.
+    /// Запускати лише явно в окремому Editor-процесі: Finish викликає вихід із нього.
+    /// </summary>
     [InitializeOnLoad]
     public static class CombatPlayCheck
     {
@@ -41,11 +47,14 @@ namespace Factura.Editor
 
         static CombatPlayCheck()
         {
+            // Прапорець у SessionState відновлює callback після входу в Play Mode,
+            // але не вмикає перевірки при кожному звичайному відкритті проєкту.
             if (SessionState.GetBool(Key, false)) EditorApplication.update += Tick;
         }
 
         public static void Run()
         {
+            // Власна контрольована сцена потрібна, щоб результат не залежав від вибору користувача в Editor.
             EditorSceneManager.OpenScene("Assets/_Game/Scenes/Gameplay.unity", OpenSceneMode.Single);
             SessionState.SetBool(Key, true);
             EditorApplication.update -= Tick;
@@ -58,6 +67,7 @@ namespace Factura.Editor
             if (!Application.isPlaying) return;
             Application.runInBackground = true;
             EditorApplication.QueuePlayerLoopUpdate();
+            // Editor.update та ігрові кадри мають різну частоту; стан сценарію рухаємо раз на кадр.
             if (Time.frameCount == lastFrame) return;
             lastFrame = Time.frameCount;
             try
@@ -67,6 +77,8 @@ namespace Factura.Editor
                 float elapsed = Time.time - phaseTime;
                 if (afterReset != 0)
                 {
+                    // Рестарт тепер асинхронний: не продовжуємо перевірки,
+                    // доки Spawner не завершить усі пачки ворогів.
                     if (game.IsPreparing) return;
                     var data = new SerializedObject(car);
                     if (afterReset == 1)
@@ -100,6 +112,8 @@ namespace Factura.Editor
                 }
                 if (phase == 0)
                 {
+                    // Початкова конфігурація: перевіряємо HP, ворогів, кістки моделі
+                    // й аудіопул, потім ізолюємо жертву для реальної стрільби.
                     if (Time.time < 0.3f) return;
                     game = UnityEngine.Object.FindFirstObjectByType<GameManager>();
                     if (game.IsPreparing) return;
@@ -122,7 +136,6 @@ namespace Factura.Editor
                     Check(Quaternion.Angle(skin.bones[4].localRotation, Quaternion.identity) > 60,
                         "Idle pose has lowered arms, not a T-pose.");
                     spawner.Barrel.ResetAt(new Vector3(4, 0, 65));
-                    // Headless checks have no focused Game View. Use a temporary settings clone, not the project asset.
                     var inputSettings = UnityEngine.Object.Instantiate(InputSystem.settings);
                     inputSettings.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus;
                     inputSettings.editorInputBehaviorInPlayMode = InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
@@ -145,6 +158,8 @@ namespace Factura.Editor
                 }
                 else if (phase == 1 && elapsed > 0.15f)
                 {
+                    // Миша повинна наводити без утримання кнопки; кут перевіряємо
+                    // після часу на згладжування, а не в ту ж мить, що й команду.
                     float yaw = Mathf.DeltaAngle(0, turret.transform.localEulerAngles.y);
                     Check(yaw > 25 && yaw < 40 && !mouse.leftButton.isPressed, $"Mouse points toward the cursor without holding: {yaw:F1} degrees.");
                     Check(audio.PlayedShots > 0 && audio.MusicLevel > 0 && audio.MusicLevel <= .181f,
@@ -154,6 +169,8 @@ namespace Factura.Editor
                 }
                 else if (phase == 2 && !hitReactionChecked && victim.IsAlive && victim.GetComponent<Health>().Current < 30)
                 {
+                    // Встигаємо перевірити несмертельне попадання: емісія,
+                    // зсув Visual і деформація мають з'явитися ще до смерті.
                     var renderer = victim.GetComponentInChildren<SkinnedMeshRenderer>();
                     var properties = new MaterialPropertyBlock();
                     renderer.GetPropertyBlock(properties);
@@ -178,6 +195,8 @@ namespace Factura.Editor
                 }
                 else if (phase == 3 && (!victim.transform.Find("Visual").gameObject.activeSelf || elapsed > 5))
                 {
+                    // Чекаємо завершення падіння, потім окремо запускаємо зомбі
+                    // до авто, щоб побачити біг, підготовку та сам удар.
                     var feedback = victim.GetComponent<EnemyFeedback>();
                     var deathTime = typeof(EnemyFeedback).GetField("deathTime", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(feedback);
                     Check(!victim.transform.Find("Visual").gameObject.activeSelf, $"Dead visual finishes and hides (timer={deathTime}, enabled={feedback.enabled}).");
@@ -191,7 +210,6 @@ namespace Factura.Editor
                 {
                     Check(attacker.State == EnemyState.Chase && attacker.GetComponent<EnemyAnimation>().MovementBlend > 0.3f,
                         "Chasing enemy drives its run pose from actual movement.");
-                    // Both legs legitimately align at the crossing frame; inspect motion over time.
                     Check(maxLegOpposition > 5,
                         "Running legs move in opposing phases.");
                     Capture("EnemyRun");
@@ -221,8 +239,6 @@ namespace Factura.Editor
                     health.ApplyDamage(health.Current);
                     Next();
                 }
-                // Results are resolved in LateUpdate, not when fatal damage/finish is requested.
-                // Wait from the actual state transition so a slow rendering frame cannot consume the debounce window.
                 else if (phase == 6 && game.State == GameState.Lose && Time.unscaledTime - resultEnteredAt > 0.5f)
                 {
                     Check(game.State == GameState.Lose && !turret.IsActive, "Fatal damage enters Lose and stops firing.");
@@ -233,6 +249,8 @@ namespace Factura.Editor
                 }
                 else if (phase == 7 && elapsed > 0.1f && !game.IsPreparing)
                 {
+                    // Перевіряємо чистий рестарт, а потім розміщуємо одну ціль
+                    // у радіусі бочки, іншу — поза ним для перевірки меж вибуху.
                     Check(game.State == GameState.Ready && health.Current == 100 && car.Progress == 0 && spawner.KilledCount == 0,
                         $"One press resets to Ready, HP, progress and kills (state={game.State}, hp={health.Current}, progress={car.Progress:F4}, kills={spawner.KilledCount}).");
                     Check(spawner.Enemies.Count == 18 && !car.transform.Find("Low HP smoke").GetComponent<ParticleSystem>().isPlaying, "Enemies and transient damage effects reset.");
@@ -269,6 +287,7 @@ namespace Factura.Editor
                 }
                 else if (phase == 10 && game.State == GameState.Win && Time.unscaledTime - resultEnteredAt > 0.5f)
                 {
+                    // Фініш має зупинити бойові системи та показати точний напис із ТЗ.
                     Check(game.State == GameState.Win && car.Progress >= 1 && !turret.IsActive, "Finish enters Win and stops movement/firing.");
                     Check(!turret.GetComponentInChildren<LineRenderer>().enabled, "Win immediately clears the aim guide.");
                     Check(GameObject.Find("Game UI").transform.Find("Result/Result title").GetComponent<Text>().text == "You win", "Exact win label.");
@@ -278,6 +297,8 @@ namespace Factura.Editor
                 }
                 else if (phase == 11 && elapsed > 0.15f)
                 {
+                    // Touch-жест не повинен перехоплюватися наявною мишею.
+                    // Після завершення жесту знову перевіряємо мишу та ціль позаду авто.
                     float yaw = Mathf.DeltaAngle(0, turret.transform.localEulerAngles.y);
                     Check(yaw > 15 && yaw < 21, $"Touch swipe aims the turret while a mouse device is present: {yaw:F1} degrees.");
                     QueueTouch(UnityEngine.InputSystem.TouchPhase.Ended, 0.6f);
@@ -330,12 +351,14 @@ namespace Factura.Editor
 
         private static void QueueMouseAtWorld(Vector3 worldPoint)
         {
+            // Світова точка переходить в екранну, після чого працює звичайний InputReader.
             Vector3 point = Camera.main.WorldToScreenPoint(worldPoint);
             QueueMouse(new Vector2(point.x, point.y), false);
         }
 
         private static void Click()
         {
+            // Окремі press/release відтворюють цикл натискання, а не прямий виклик GameManager.
             var position = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
             QueueMouse(position, true);
             QueueMouse(position, false);
@@ -343,12 +366,15 @@ namespace Factura.Editor
 
         private static void QueueTouch(UnityEngine.InputSystem.TouchPhase phase, float x)
         {
+            // Використовуємо той самий touchId у всіх фазах одного жесту.
             InputSystem.QueueStateEvent(touch, new TouchState { touchId = 1, phase = phase, position = new Vector2(Screen.width * x, Screen.height * 0.5f) });
             InputSystem.Update();
         }
 
         private static void Capture(string name)
         {
+            // Для звіту рендеримо гру разом із HUD у портретний RenderTexture.
+            // Тимчасово змінені камера/Canvas відновлюються в finally навіть після помилки.
             var camera = Camera.main;
             var canvas = GameObject.Find("Game UI").GetComponent<Canvas>();
             var scaler = canvas.GetComponent<CanvasScaler>();
@@ -388,6 +414,8 @@ namespace Factura.Editor
 
         private static void Finish(int code)
         {
+            // Прибираємо віртуальні пристрої та callback, пишемо звіт у Library
+            // і повертаємо зовнішньому процесу код успіху або помилки.
             SessionState.SetBool(Key, false);
             EditorApplication.update -= Tick;
             if (mouse != null) InputSystem.RemoveDevice(mouse);

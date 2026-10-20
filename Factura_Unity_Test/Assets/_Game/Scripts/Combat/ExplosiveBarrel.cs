@@ -3,6 +3,11 @@ using UnityEngine;
 
 namespace Factura
 {
+    /// <summary>
+    /// Додаткова тактична ціль: отримує звичайну шкоду через Health і вибухає після смерті.
+    /// Вибух уражає лише ворогів із заданої маски, не авто й не саму бочку повторно.
+    /// Візуал, колайдер і HP відновлюються на початку наступного заїзду.
+    /// </summary>
     [RequireComponent(typeof(Health), typeof(CapsuleCollider))]
     public sealed class ExplosiveBarrel : MonoBehaviour
     {
@@ -11,6 +16,8 @@ namespace Factura
         [SerializeField] private LayerMask enemyLayers;
         [SerializeField, Min(0.1f)] private float radius = 4.5f;
         [SerializeField, Min(1)] private int damage = 60;
+        // Фіксований буфер уникає створення масиву на кожен вибух. Для сцени з
+        // більшою кількістю хітбоксів цю місткість треба перевірити знову.
         private readonly Collider[] hits = new Collider[32];
         private Health health;
         private CapsuleCollider hitbox;
@@ -30,6 +37,7 @@ namespace Factura
 
         public void ResetAt(Vector3 position)
         {
+            // Повторно використовуємо одну бочку між заїздами разом з її ParticleSystem.
             transform.position = position;
             health.ResetHealth();
             visual.SetActive(true);
@@ -39,14 +47,21 @@ namespace Factura
 
         private void Explode()
         {
+            // Спершу прибираємо хітбокс, щоб наступні кулі не влучали в знищену бочку.
+            // Health вже забороняє другу подію смерті, тому вибух виконується один раз.
             hitbox.enabled = false;
             visual.SetActive(false);
             explosion.Play();
             Exploded?.Invoke(AimPoint);
+            // NonAlloc наповнює наш буфер; Collide враховує trigger-хітбокси ворогів.
             int count = Physics.OverlapSphereNonAlloc(AimPoint, radius, hits, enemyLayers, QueryTriggerInteraction.Collide);
+            // count — скільки слотів масиву реально заповнено цим запитом.
+            // Перебираємо лише їх, а не старі значення решти буфера від попереднього вибуху.
             for (int index = 0; index < count; index++)
             {
-                // Only enemy hitboxes take blast damage; the barrel is not counted as a zombie kill.
+                // У поточному префабі один бойовий колайдер на корені ворога.
+                // Якщо додати дочірні/декілька хітбоксів, знадобляться GetComponentInParent
+                // та усунення дублікатів, інакше зміниться підрахунок шкоди.
                 var enemy = hits[index].GetComponent<EnemyAI>();
                 if (!enemy || !enemy.IsAlive) continue;
                 Vector3 direction = enemy.AimPoint - AimPoint;

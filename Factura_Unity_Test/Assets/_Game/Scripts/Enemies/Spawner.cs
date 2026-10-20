@@ -5,6 +5,11 @@ using UnityEngine;
 
 namespace Factura
 {
+    /// <summary>
+    /// Готує ворогів перед заїздом, задає їм ціль, розставляє бочку й рахує вбивства.
+    /// Один генератор SpawnBatches обслуговує і async-запуск гри, і синхронні перевірки.
+    /// Async тут розподіляє роботу між кадрами головного потоку, а не запускає Unity API у Task.Run.
+    /// </summary>
     public sealed class Spawner : MonoBehaviour
     {
         [SerializeField] private EnemyAI prefab;
@@ -16,6 +21,8 @@ namespace Factura
         [SerializeField] private bool useFixedSeed;
         [SerializeField] private int seed = 41;
         [SerializeField] private ExplosiveBarrel barrel;
+        // Сам список зберігається між рестартами. Турель і вороги отримують його
+        // як IReadOnlyList, тому бачать актуальне наповнення без повторного зв'язування.
         private readonly List<EnemyAI> enemies = new();
         public IReadOnlyList<EnemyAI> Enemies => enemies;
         public int KilledCount { get; private set; }
@@ -23,7 +30,8 @@ namespace Factura
         public ExplosiveBarrel Barrel => barrel;
         public bool IsPreparing { get; private set; }
 
-        // Deterministic immediate setup for editor fixtures; gameplay uses the frame-budgeted async path below.
+        // Синхронний шлях призначений для контрольованих Editor-перевірок.
+        // У звичайній грі координатор використовує PrepareAsync, щоб не створювати все в одному кадрі.
         public void Prepare(Collider car, Health carHealth)
         {
             if (IsPreparing) throw new InvalidOperationException("Enemy preparation is already running.");
@@ -38,12 +46,15 @@ namespace Factura
             try
             {
                 cancellation.ThrowIfCancellationRequested();
+                // Кожен yield генератора означає готову пачку; NextFrameAsync
+                // віддає керування кадру і враховує скасування життєвого циклу сцени.
                 foreach (int batch in SpawnBatches(car, carHealth))
                     await Awaitable.NextFrameAsync(cancellation);
                 cancellation.ThrowIfCancellationRequested();
             }
             catch
             {
+                // Частково створений рівень не залишаємо ні при помилці, ні при скасуванні.
                 ClearEnemies();
                 throw;
             }
@@ -56,6 +67,8 @@ namespace Factura
             {
                 if (!enemy) continue;
                 enemy.GetComponent<Health>().Died -= OnEnemyDied;
+                // Destroy виконається відкладено, тому відразу вимикаємо старих ворогів,
+                // щоб вони не били авто й не потрапляли у фізичні запити нового заїзду.
                 enemy.gameObject.SetActive(false);
                 Destroy(enemy.gameObject);
             }
@@ -67,6 +80,8 @@ namespace Factura
             ClearEnemies();
             KilledCount = 0;
             KillsChanged?.Invoke(0);
+            // Фіксований seed дає відтворювані перевірки; звичайний режим змінює розстановку.
+            // Окремий System.Random не змінює глобальну послідовність UnityEngine.Random.
             var random = useFixedSeed ? new System.Random(seed) : new System.Random();
             float start = car.transform.position.z + safeStartDistance;
             float end = car.transform.position.z + routeLength - 5;
@@ -74,6 +89,8 @@ namespace Factura
             {
                 Vector3 position = default;
                 bool found = false;
+                // Обмежуємо спроби розміщення: надмірні enemyCount/minimumSpacing
+                // не повинні спричинити нескінченний цикл у маленькій області.
                 for (int attempt = 0; attempt < 64; attempt++)
                 {
                     position = new Vector3(car.transform.position.x + Mathf.Lerp(-halfWidth, halfWidth, (float)random.NextDouble()),
@@ -97,7 +114,8 @@ namespace Factura
                 enemy.Initialize(car, carHealth, enemies);
                 enemy.GetComponent<Health>().Died += OnEnemyDied;
                 enemies.Add(enemy);
-                // Unity object creation stays on the main thread, with at most four enemies per frame.
+                // Не більше чотирьох створень між точками повернення керування.
+                // Остання неповна пачка завершує генератор без зайвого очікування кадру.
                 if ((index + 1) % 4 == 0 && index + 1 < enemyCount) yield return index + 1;
             }
             PlaceBarrelNearGroup(car.transform.position.x);
@@ -105,6 +123,8 @@ namespace Factura
 
         private void PlaceBarrelNearGroup(float centerX)
         {
+            // Вибираємо місце біля щільнішої групи, щоб додатковий об'єкт мав
+            // тактичний сенс, а не випадково стояв далеко від усіх ворогів.
             if (!barrel || enemies.Count == 0) return;
             Vector3 best = enemies[0].transform.position;
             int most = -1;
@@ -122,10 +142,12 @@ namespace Factura
             barrel.ResetAt(best);
         }
 
+        // Health повідомляє про смерть один раз; бочка не входить у цей лічильник.
         private void OnEnemyDied() => KillsChanged?.Invoke(++KilledCount);
 
         public void SetCombatActive(bool value)
         {
+            // У Ready/Win/Lose вороги лишаються в сцені, але не переслідують і не атакують авто.
             foreach (var enemy in enemies) if (enemy) enemy.SetCombatActive(value);
         }
     }
